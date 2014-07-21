@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="signage" defaultIdMethod="native">
+
+	<table name="screen">
+		<column name="id" 			type="integer" 				required="true" primaryKey="true" autoIncrement="true"/>
+		<column name="name" 		type="varchar" size="255"	required="true" />
+		<column name="ip" 			type="varchar" size="24"	required="true" />
+		<column name="key"			type="integer" 				required="true" />
+		<column name="width"		type="integer" 				required="true" />
+		<column name="height"		type="integer" 				required="true" />
+		<column name="last_seen"	type="TIMESTAMP" 			required="false"/>
+		<column name="mac" 			type="varchar" size="24"	required="true" />
+		
+		<validator column="name">
+  			<rule name="required" message="Name is required." />
+  			<rule name="maxLength" value="255" message="Name can be no larger than ${value} charactors in length" />
+		</validator>
+		<validator column="ip">
+  			<rule name="required" message="IP address is required." />
+  			<rule name="class" class="application.libraries.propel.validator.IpValidator" message="IP address must be a valid IP address (IPv4 or IPv6)." />
+		</validator>
+		<validator column="mac">
+  			<rule name="required" message="MAC address is required." />
+  			<rule name="class" class="application.libraries.propel.validator.MacValidator" message="MAC address must be a valid MAC address, seperated with a colon (:)." />
+		</validator>
+		<validator column="width">
+  			<rule name="type" value="integer" message="Width must be an integer." />
+		</validator>
+		<validator column="height">
+  			<rule name="type" value="integer" message="Height must be an integer." />
+		</validator>
+
+	</table>
+
+	<table name="message">
+		<column name="id" 			type="integer" 				required="true" primaryKey="true" autoIncrement="true"/>
+		<column name="user_id"		type="integer" 				required="true" />
+		<column name="created_at"	type="timestamp" 			required="true" />
+		<column name="title"		type="varchar" size="255"	required="true" />
+		<column name="author"		type="varchar" size="255"	required="true" />
+		<column name="message"		type="longvarchar"			required="true" />
+		<column name="start"		type="date"					required="true" />
+		<column name="end"			type="date"					required="true" />
+		
+		<foreign-key foreignTable="user">
+			<reference local="user_id" foreign="id" />
+		</foreign-key>
+		
+		<validator column="title">
+  			<rule name="required" message="Title is required." />
+  			<rule name="maxLength" value="255" message="Title can be no larger than ${value} charactors in length" />
+		</validator>
+		<validator column="author">
+  			<rule name="required" message="Author is required." />
+  			<rule name="maxLength" value="255" message="Author can be no larger than ${value} charactors in length" />
+		</validator>
+		<validator column="message">
+  			<rule name="required" message="Message is required." />
+  			<rule name="maxLength" value="500" message="Message can be no larger than ${value} charactors in length" />
+		</validator>
+		<validator column="start">
+  			<rule name="required" message="Start date is required." />
+		</validator>
+		<validator column="end">
+  			<rule name="required" message="End date is required." />
+		</validator>
+		
+	</table>
+	
+	<table name="screen_message" isCrossRef="true">
+		<column name="screen_id" 	type="INTEGER" 	primaryKey="true" />
+		<column name="message_id" 	type="INTEGER" 	primaryKey="true" />
+		
+		<foreign-key foreignTable="screen" onDelete="cascade">
+			<reference local="screen_id" foreign="id" />
+		</foreign-key>
+		<foreign-key foreignTable="message" onDelete="cascade">
+			<reference local="message_id" foreign="id" />
+		</foreign-key>
+	</table>
+	
+	<table name="user">
+		<column name="id"			type="INTEGER"	primaryKey="true" autoIncrement="true"/>
+		<column name="username"		type="VARCHAR"	size="254"	required="true" />
+		<column name="use_ad"		type="BOOLEAN"				required="true" />
+		<column name="password"		type="VARCHAR"	size="254"	required="false"/>
+		<column name="name"			type="VARCHAR"	size="254"	required="true" />
+		
+		<validator column="username">
+  			<rule name="required" message="Username is required." />
+		</validator>
+		<validator column="name">
+  			<rule name="required" message="Name is required." />
+		</validator>
+	</table>
+	
+	<table name="slideshow">
+		<column name="id"			type="INTEGER"	primaryKey="true" autoIncrement="true"/>
+		<column name="name"			type="VARCHAR"	size="100"	required="true" />
+		<column name="width"		type="INTEGER"				required="true" />
+		<column name="height"		type="INTEGER"				required="true" />
+		<column name="delay"		type="INTEGER"				required="true" />
+		<column name="effect"		type="ENUM"					required="true" valueSet="blindX,blindY,blindZ,cover,curtainX,curtainY,fade,fadeZoom,growX,growY,none,scrollUp,scrollDown,scrollLeft,scrollRight,scrollHorz,scrollVert,shuffle,slideX,slideY,toss,turnUp,turnDown,turnLeft,turnRight,uncover,wipe,zoom" />
+		
+		<validator column="name">
+  			<rule name="required" message="Name is required." />
+		</validator>
+		<validator column="width">
+  			<rule name="required" message="Width is required." />
+  			<rule name="type" value="integer" message="Width must be a number" />
+  			<rule name="minValue" value="0" message="Width cannot be negative" />
+		</validator>
+		<validator column="height">
+  			<rule name="required" message="Height is required." />
+  			<rule name="type" value="integer" message="Height must be a number" />
+  			<rule name="minValue" value="0" message="Height cannot be negative" />
+		</validator>
+		<validator column="delay">
+  			<rule name="required" message="Delay is required." />
+  			<rule name="type" value="integer" message="Delay must be a number" />
+			<rule name="minValue" value="0" message="Delay cannot be negative" />
+		</validator>
+		<validator column="effect">
+  			<rule name="required" message="Effect is required." />
+		</validator>
+	</table>
+	
+	<table name="image">
+		<column name="id"			type="INTEGER"	primaryKey="true" autoIncrement="true"/>
+		<column name="name"			type="VARCHAR"	size="100"	required="true" />
+		<column name="filename" 	type="VARCHAR"	size="100"	required="true" />
+		<column name="date"			type="TIMESTAMP"			required="true" />
+		<column name="user_id"		type="INTEGER"				required="true" />
+		
+		<foreign-key foreignTable="user" onDelete="cascade">
+			<reference local="user_id" foreign="id" />
+		</foreign-key>
+	</table>
+	
+	<table name="slideshow_image" isCrossRef="true">
+		<column name="slideshow_id"			type="INTEGER"	primaryKey="true"/>
+		<column name="image_id"				type="INTEGER"	primaryKey="true"/>
+		<column name="order"				type="INTEGER"	primaryKey="true"/>
+		
+		<foreign-key foreignTable="slideshow" onDelete="cascade">
+			<reference local="slideshow_id" foreign="id" />
+		</foreign-key>
+		<foreign-key foreignTable="image" onDelete="cascade">
+			<reference local="image_id" foreign="id" />
+		</foreign-key>
+	</table>
+	
+	<table name="quote">
+		<column name="id"			type="INTEGER"		primaryKey="true" autoIncrement="true" />
+		<column name="quote"		type="LONGVARCHAR"	required="true" />
+	</table>
+
+	<table name="template">
+		<column name="id"			type="INTEGER"		primaryKey="true" autoIncrement="true" />
+		<column name="name"			type="VARCHAR"	size="100"	required="true" />
+		<column name="layout"		type="INTEGER"				required="true" />
+
+	</table>
+	
+	<table name="widget" abstract="true">
+		<column name="id"			type="INTEGER"		primaryKey="true" autoIncrement="true" />
+		<column name="pos_id"		type="VARCHAR"	size="20"	required="true" />
+		<column name="data"			type="LONGVARCHAR"			required="false" />
+		<column name="class_key" type="INTEGER" inheritance="single">
+			<inheritance key="1" class="Widget"/>
+			<inheritance key="2" class="MessageWidget" extends="Widget"/>
+			<inheritance key="3" class="SlideshowWidget" extends="Widget"/>
+		</column>
+	</table>
+</database>

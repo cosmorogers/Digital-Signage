@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<log>
+		<type>file</type>
+		<name>/home/chris/workspace/Signage/propel.log</name>
+		<ident>propel</ident>
+		<level>7</level>
+	</log>
+ 
+	<propel>
+		<datasources default="signage">
+			<datasource id="signage">
+				<adapter>mysql</adapter> <!-- sqlite, mysql, mssql, oracle, or pgsql -->
+				<connection>
+					<classname>DebugPDO</classname>
+					<dsn>mysql:host=localhost;dbname=signage</dsn>
+					<user>signage</user>
+					<password>jsmqFr5qP4DtF9a7</password>
+					 <settings>
+            			<setting id="charset">utf8</setting>
+           			</settings>
+				</connection>
+			</datasource>
+		</datasources>
+	</propel>
+</config>
