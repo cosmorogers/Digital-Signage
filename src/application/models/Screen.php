@@ -1,7 +1,6 @@
 <?php
 
 
-
 /**
  * Skeleton subclass for representing a row from the 'screen' table.
  *
@@ -15,37 +14,41 @@
  */
 class Screen extends BaseScreen
 {
-	public function checkAlive()
-	{
-        	exec(sprintf('ping -c 1 -W 5 %s', escapeshellarg($this->getIp())), $res, $rval);
-        	return $rval === 0;
-	}
-
-	public function magicBoot()
-	{
-		exec(sprintf('wakeonlan %s', escapeshellarg($this->getMac())), $res, $rval);
-		return $rval === 0;
-	}
-
-	public function checkIn()
-	{
-		$this->setLastSeen(time())
-		->save();
-	}
-
-  public function getMachineFriendlyName()
-  {
-    return strtolower(url_title($this->getName()));
-  }
-
-  public function getRemote()
-  {
-    exec('vncsnapshot -passwd /home/chris/.screens.pwd ' . $this->getIp() . ' /var/www/internal/display/assets/uploads/previews/' . $this->getMachineFriendlyName() . '.jpg',$res,$val);
-
-    if (0 === $val) {
-      return base_url('assets/uploads/previews/' . $this->getMachineFriendlyName() . '.jpg');
-    } else {
-      return NULL;
+    public function checkAlive()
+    {
+        exec(sprintf('ping -c 1 -W 5 %s', escapeshellarg($this->getIp())), $res, $rval);
+        return $rval === 0;
     }
-  }
+
+    public function magicBoot()
+    {
+        exec(sprintf('wakeonlan %s', escapeshellarg($this->getMac())), $res, $rval);
+        return $rval === 0;
+    }
+
+    public function checkIn()
+    {
+        $this->setLastSeen(time())
+            ->save();
+    }
+
+    public function getMachineFriendlyName()
+    {
+        return strtolower(url_title($this->getName()));
+    }
+
+    public function getRemote()
+    {
+
+        $path = realpath(dirname($_SERVER['SCRIPT_FILENAME']));
+        $previewPath = 'assets/uploads/previews/';
+
+        exec('vncsnapshot -passwd ' . $path . '/.vnc.pwd ' . $this->getIp() . ' ' . $path . DIRECTORY_SEPARATOR . $previewPath . $this->getMachineFriendlyName() . '.jpg', $res, $val);
+
+        if (0 === $val) {
+            return base_url($previewPath . $this->getMachineFriendlyName() . '.jpg');
+        } else {
+            return NULL;
+        }
+    }
 }
