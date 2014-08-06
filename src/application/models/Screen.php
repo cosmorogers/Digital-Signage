@@ -40,7 +40,7 @@ class Screen extends BaseScreen
 
   public function getRemote()
   {
-    exec('vncsnapshot -passwd /var/www/internal/display/.screens.pwd ' . $this->getIp() . ' /var/www/internal/display/assets/uploads/previews/' . $this->getMachineFriendlyName() . '.jpg',$res,$val);
+    exec('vncsnapshot -passwd /home/chris/.screens.pwd ' . $this->getIp() . ' /var/www/internal/display/assets/uploads/previews/' . $this->getMachineFriendlyName() . '.jpg',$res,$val);
 
     if (0 === $val) {
       return base_url('assets/uploads/previews/' . $this->getMachineFriendlyName() . '.jpg');
