@@ -31,4 +31,6 @@ $(function() {
 			mess.appendTo($('#dashboardMessages')).delay(2000).fadeOut();
 		}, 'json');
 	});
+
+    $('time').timeago();
 });

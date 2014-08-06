@@ -26,7 +26,9 @@ $this->view('templates/header', $header);
 		    		</tr>
 		    		<tr>
 		    			<th>Last seen:</th>
-		    			<td><?= $screen->getLastSeen(); ?></td>
+		    			<td>
+                            <time class="last-seen" datetime="<?= $screen->getLastSeen(); ?>"><?= $screen->getLastSeen(); ?></time>
+                        </td>
 	    			</tr>
 			    </table>
           <div class="clearfix">
@@ -63,6 +65,6 @@ $this->view('templates/header', $header);
 
 <?php 
 $footer = array (
-	'js' => array ('dashboard.js')
+	'js' => array ('jquery.timeago.js', 'dashboard.js')
 );
 $this->view('templates/footer', $footer);?>
