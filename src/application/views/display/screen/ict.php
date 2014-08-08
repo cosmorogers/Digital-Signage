@@ -83,11 +83,12 @@
           </div>
 
             <div class="hero-unit" style="padding:10px; text-align:center !important;">
-                <h3>Temperature</h3>
+                <h3>Current Room Temperature</h3>
                 <?php
                 $temperature = TemperatureQuery::create()->orderByTime(Criteria::DESC)->findOne();
-                echo '<strong>' . $temperature->getReading() . '&deg;C</strong><br><small class="muted">' . $temperature->getTime('H:i') . '</small>';
+                echo '<h2>' . $temperature->getReading() . '&deg;C <small class="muted">(' . $temperature->getTime('H:i') . ')</small></h2>';
                 ?>
+                <div id="temperatureGraph" style="width: 100%; height: 200px"></div>
             </div>
         </div>
 	
@@ -108,6 +109,9 @@
 <script src="<?php echo base_url('assets/js/jquery.cycle2.min.js');?>"></script>
 <script src="<?php echo base_url('assets/js/refresh-screen.js');?>"></script>
 <script src="<?php echo base_url('assets/js/weather.js');?>"></script>
+<script src="<?php echo base_url('assets/js/raphael-2.0.2.min.js');?>"></script>
+    raphael-2.0.2.min.js
+<script src="<?php echo base_url('assets/js/morris.min.js');?>"></script>
 <script type="text/javascript">
 $('#messages').cycle();
 $('#slideshow').cycle();
@@ -130,6 +134,27 @@ slideshow.on( 'cycle-paused', function( e, opts ) {
 
 slideshow.on( 'cycle-resumed', function( e, opts, timeoutRemaining ) {
     progress.animate({ width: '100%' }, timeoutRemaining, 'linear' );
+});
+var temperatures =<?php
+    $temperatures = TemperatureQuery::create()
+        ->filterByLocation('it')
+        ->filterByTime(strtotime("-1 week"), Criteria::GREATER_THAN)
+        ->find();
+        $tArray = array();
+    foreach ($temperatures as $t) {
+        $tArray[] = array('time' => $t->getTime(), 'temperature' => $t->getReading());
+    }
+    echo json_encode($tArray);
+    ?>;
+
+Morris.Line({
+    element: 'temperatureGraph',
+    data: temperatures,
+    xkey: 'time',
+    ykeys: ['temperature'],
+    labels: ['Temperature'],
+    pointSize: 0,
+    hideHover: 'always'
 });
 </script>
   </body>        
