@@ -81,6 +81,14 @@
               <tr id="weatherRow"></tr>
             </table>
           </div>
+
+            <div class="hero-unit" style="padding:10px; text-align:center !important;">
+                <h3>Temperature</h3>
+                <?php
+                $temperature = TemperatureQuery::create()->orderByTime(Criteria::DESC)->findOne();
+                echo '<strong>' . $temperature->getReading() . '&deg;C</strong><br><small class="muted">' . $temperature->getTime('H:i') . '</small>';
+                ?>
+            </div>
         </div>
 	
         <div class="span9">
