@@ -17,23 +17,26 @@ $this->helper('form');
 
 <?php echo form_open('', array('class'=>'form-horizontal'))?>
 
-	<div class="control-group ">
+	<div class="control-group <?php echo (isset($errors[TemplatePeer::NAME]) ? 'error' : ''); ?>">
 		<label class="control-label" for="inputName">Name</label>
 		<div class="controls">
-			<input type="text" name="template[Name]" id="inputName" placeholder="Human friendly template name" value="" >
-			<span class="help-inline"></span>
-		</div>
+			<input type="text" name="template[Name]" id="inputName" placeholder="Human friendly template name" value="<?php echo $template->getName(); ?>" >
+            <span class="help-inline"><?php echo (isset($errors[TemplatePeer::NAME]) ? $errors[TemplatePeer::NAME] : ''); ?></span>
+
+        </div>
 	</div>
 
-	<div class="control-group">
+	<div class="control-group <?php echo (isset($errors[TemplatePeer::LAYOUT]) ? 'error' : ''); ?>">
 		<label class="control-label" for="inputLayout">Layout</label>
 		<div class="controls">
-			<select name="template[layout]">
+			<select name="template[Layout]">
 				<?php foreach($layouts as $layout): ?>
-				<option vlaue="<?php echo $layout['file']; ?>"><?php echo $layout['name']; ?></option>
+				<option value="<?php echo $layout['file']; ?>"><?php echo $layout['name']; ?></option>
 				<?php endforeach; ?>
 			</select>
-		</div>
+            <span class="help-inline"><?php echo (isset($errors[TemplatePeer::LAYOUT]) ? $errors[TemplatePeer::LAYOUT] : ''); ?></span>
+        </div>
+
 	</div>
 
 	<div class="form-actions">

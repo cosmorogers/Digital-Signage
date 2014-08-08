@@ -40,9 +40,10 @@ class TemplateTableMap extends TableMap
         // columns
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
         $this->addColumn('name', 'Name', 'VARCHAR', true, 100, null);
-        $this->addColumn('width', 'Width', 'INTEGER', true, null, null);
-        $this->addColumn('height', 'Height', 'INTEGER', true, null, null);
+        $this->addColumn('layout', 'Layout', 'VARCHAR', true, 100, null);
         // validators
+        $this->addValidator('name', 'required', 'propel.validator.RequiredValidator', '', 'Name is required.');
+        $this->addValidator('layout', 'required', 'propel.validator.RequiredValidator', '', 'A layout is required.');
     } // initialize()
 
     /**
@@ -50,6 +51,7 @@ class TemplateTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('TemplateWidget', 'TemplateWidget', RelationMap::ONE_TO_MANY, array('id' => 'template_id', ), 'CASCADE', null, 'TemplateWidgets');
     } // buildRelations()
 
 } // TemplateTableMap

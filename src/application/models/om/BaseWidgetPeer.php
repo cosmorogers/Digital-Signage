@@ -18,70 +18,28 @@ abstract class BaseWidgetPeer
     const TABLE_NAME = 'widget';
 
     /** the related Propel class for this table */
-    const OM_CLASS = '';
+    const OM_CLASS = 'Widget';
 
     /** the related TableMap class for this table */
     const TM_CLASS = 'WidgetTableMap';
 
     /** The total number of columns. */
-    const NUM_COLUMNS = 6;
+    const NUM_COLUMNS = 1;
 
     /** The number of lazy-loaded columns. */
     const NUM_LAZY_LOAD_COLUMNS = 0;
 
     /** The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS) */
-    const NUM_HYDRATE_COLUMNS = 6;
+    const NUM_HYDRATE_COLUMNS = 1;
 
-    /** the column name for the id field */
-    const ID = 'widget.id';
-
-    /** the column name for the pos_x field */
-    const POS_X = 'widget.pos_x';
-
-    /** the column name for the pos_y field */
-    const POS_Y = 'widget.pos_y';
-
-    /** the column name for the width field */
-    const WIDTH = 'widget.width';
-
-    /** the column name for the height field */
-    const HEIGHT = 'widget.height';
-
-    /** the column name for the class_key field */
-    const CLASS_KEY = 'widget.class_key';
-
-    /** A key representing a particular subclass */
-    const CLASSKEY_1 = '1';
-
-    /** A key representing a particular subclass */
-    const CLASSKEY_WIDGET = '1';
-
-    /** A class that can be returned by this peer. */
-    const CLASSNAME_1 = 'Widget';
-
-    /** A key representing a particular subclass */
-    const CLASSKEY_2 = '2';
-
-    /** A key representing a particular subclass */
-    const CLASSKEY_MESSAGEWIDGET = '2';
-
-    /** A class that can be returned by this peer. */
-    const CLASSNAME_2 = 'MessageWidget';
-
-    /** A key representing a particular subclass */
-    const CLASSKEY_3 = '3';
-
-    /** A key representing a particular subclass */
-    const CLASSKEY_SLIDESHOWWIDGET = '3';
-
-    /** A class that can be returned by this peer. */
-    const CLASSNAME_3 = 'SlideshowWidget';
+    /** the column name for the name field */
+    const NAME = 'widget.name';
 
     /** The default string format for model objects of the related table **/
     const DEFAULT_STRING_FORMAT = 'YAML';
 
     /**
-     * An identiy map to hold any loaded instances of Widget objects.
+     * An identity map to hold any loaded instances of Widget objects.
      * This must be public so that other peer classes can access this when hydrating from JOIN
      * queries.
      * @var        array Widget[]
@@ -96,12 +54,12 @@ abstract class BaseWidgetPeer
      * e.g. WidgetPeer::$fieldNames[WidgetPeer::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        BasePeer::TYPE_PHPNAME => array ('Id', 'PosX', 'PosY', 'Width', 'Height', 'ClassKey', ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'posX', 'posY', 'width', 'height', 'classKey', ),
-        BasePeer::TYPE_COLNAME => array (WidgetPeer::ID, WidgetPeer::POS_X, WidgetPeer::POS_Y, WidgetPeer::WIDTH, WidgetPeer::HEIGHT, WidgetPeer::CLASS_KEY, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'POS_X', 'POS_Y', 'WIDTH', 'HEIGHT', 'CLASS_KEY', ),
-        BasePeer::TYPE_FIELDNAME => array ('id', 'pos_x', 'pos_y', 'width', 'height', 'class_key', ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, )
+        BasePeer::TYPE_PHPNAME => array ('Name', ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('name', ),
+        BasePeer::TYPE_COLNAME => array (WidgetPeer::NAME, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('NAME', ),
+        BasePeer::TYPE_FIELDNAME => array ('name', ),
+        BasePeer::TYPE_NUM => array (0, )
     );
 
     /**
@@ -111,12 +69,12 @@ abstract class BaseWidgetPeer
      * e.g. WidgetPeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'PosX' => 1, 'PosY' => 2, 'Width' => 3, 'Height' => 4, 'ClassKey' => 5, ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'posX' => 1, 'posY' => 2, 'width' => 3, 'height' => 4, 'classKey' => 5, ),
-        BasePeer::TYPE_COLNAME => array (WidgetPeer::ID => 0, WidgetPeer::POS_X => 1, WidgetPeer::POS_Y => 2, WidgetPeer::WIDTH => 3, WidgetPeer::HEIGHT => 4, WidgetPeer::CLASS_KEY => 5, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'POS_X' => 1, 'POS_Y' => 2, 'WIDTH' => 3, 'HEIGHT' => 4, 'CLASS_KEY' => 5, ),
-        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'pos_x' => 1, 'pos_y' => 2, 'width' => 3, 'height' => 4, 'class_key' => 5, ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, )
+        BasePeer::TYPE_PHPNAME => array ('Name' => 0, ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('name' => 0, ),
+        BasePeer::TYPE_COLNAME => array (WidgetPeer::NAME => 0, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('NAME' => 0, ),
+        BasePeer::TYPE_FIELDNAME => array ('name' => 0, ),
+        BasePeer::TYPE_NUM => array (0, )
     );
 
     /**
@@ -190,19 +148,9 @@ abstract class BaseWidgetPeer
     public static function addSelectColumns(Criteria $criteria, $alias = null)
     {
         if (null === $alias) {
-            $criteria->addSelectColumn(WidgetPeer::ID);
-            $criteria->addSelectColumn(WidgetPeer::POS_X);
-            $criteria->addSelectColumn(WidgetPeer::POS_Y);
-            $criteria->addSelectColumn(WidgetPeer::WIDTH);
-            $criteria->addSelectColumn(WidgetPeer::HEIGHT);
-            $criteria->addSelectColumn(WidgetPeer::CLASS_KEY);
+            $criteria->addSelectColumn(WidgetPeer::NAME);
         } else {
-            $criteria->addSelectColumn($alias . '.id');
-            $criteria->addSelectColumn($alias . '.pos_x');
-            $criteria->addSelectColumn($alias . '.pos_y');
-            $criteria->addSelectColumn($alias . '.width');
-            $criteria->addSelectColumn($alias . '.height');
-            $criteria->addSelectColumn($alias . '.class_key');
+            $criteria->addSelectColumn($alias . '.name');
         }
     }
 
@@ -255,7 +203,7 @@ abstract class BaseWidgetPeer
      *
      * @param      Criteria $criteria object used to create the SELECT statement.
      * @param      PropelPDO $con
-     * @return                 Widget
+     * @return Widget
      * @throws PropelException Any exceptions caught during processing will be
      *		 rethrown wrapped into a PropelException.
      */
@@ -322,14 +270,14 @@ abstract class BaseWidgetPeer
      * to the cache in order to ensure that the same objects are always returned by doSelect*()
      * and retrieveByPK*() calls.
      *
-     * @param      Widget $obj A Widget object.
+     * @param Widget $obj A Widget object.
      * @param      string $key (optional) key to use for instance map (for performance boost if key was already calculated externally).
      */
     public static function addInstanceToPool($obj, $key = null)
     {
         if (Propel::isInstancePoolingEnabled()) {
             if ($key === null) {
-                $key = (string) $obj->getId();
+                $key = (string) $obj->getName();
             } // if key === null
             WidgetPeer::$instances[$key] = $obj;
         }
@@ -352,7 +300,7 @@ abstract class BaseWidgetPeer
     {
         if (Propel::isInstancePoolingEnabled() && $value !== null) {
             if (is_object($value) && $value instanceof Widget) {
-                $key = (string) $value->getId();
+                $key = (string) $value->getName();
             } elseif (is_scalar($value)) {
                 // assume we've been passed a primary key
                 $key = (string) $value;
@@ -372,7 +320,7 @@ abstract class BaseWidgetPeer
      * a multi-column primary key, a serialize()d version of the primary key will be returned.
      *
      * @param      string $key The key (@see getPrimaryKeyHash()) for this instance.
-     * @return   Widget Found object or null if 1) no instance exists for specified key or 2) instance pooling has been disabled.
+     * @return Widget Found object or null if 1) no instance exists for specified key or 2) instance pooling has been disabled.
      * @see        getPrimaryKeyHash()
      */
     public static function getInstanceFromPool($key)
@@ -393,10 +341,8 @@ abstract class BaseWidgetPeer
      */
     public static function clearInstancePool($and_clear_all_references = false)
     {
-      if ($and_clear_all_references)
-      {
-        foreach (WidgetPeer::$instances as $instance)
-        {
+      if ($and_clear_all_references) {
+        foreach (WidgetPeer::$instances as $instance) {
           $instance->clearAllReferences(true);
         }
       }
@@ -443,7 +389,7 @@ abstract class BaseWidgetPeer
     public static function getPrimaryKeyFromRow($row, $startcol = 0)
     {
 
-        return (int) $row[$startcol];
+        return (string) $row[$startcol];
     }
 
     /**
@@ -457,6 +403,8 @@ abstract class BaseWidgetPeer
     {
         $results = array();
 
+        // set the class once to avoid overhead in the loop
+        $cls = WidgetPeer::getOMClass();
         // populate the object(s)
         while ($row = $stmt->fetch(PDO::FETCH_NUM)) {
             $key = WidgetPeer::getPrimaryKeyHashFromRow($row, 0);
@@ -466,9 +414,6 @@ abstract class BaseWidgetPeer
                 // $obj->hydrate($row, 0, true); // rehydrate
                 $results[] = $obj;
             } else {
-                // class must be set each time from the record row
-                $cls = WidgetPeer::getOMClass($row, 0);
-                $cls = substr('.'.$cls, strrpos('.'.$cls, '.') + 1);
                 $obj = new $cls();
                 $obj->hydrate($row);
                 $results[] = $obj;
@@ -496,13 +441,8 @@ abstract class BaseWidgetPeer
             // See http://www.propelorm.org/ticket/509
             // $obj->hydrate($row, $startcol, true); // rehydrate
             $col = $startcol + WidgetPeer::NUM_HYDRATE_COLUMNS;
-        } elseif (null == $key) {
-            // empty resultset, probably from a left join
-            // since this table is abstract, we can't hydrate an empty object
-            $obj = null;
-            $col = $startcol + WidgetPeer::NUM_HYDRATE_COLUMNS;
         } else {
-            $cls = WidgetPeer::getOMClass($row, $startcol);
+            $cls = WidgetPeer::OM_CLASS;
             $obj = new $cls();
             $col = $obj->hydrate($row, $startcol);
             WidgetPeer::addInstanceToPool($obj, $key);
@@ -530,50 +470,19 @@ abstract class BaseWidgetPeer
     {
       $dbMap = Propel::getDatabaseMap(BaseWidgetPeer::DATABASE_NAME);
       if (!$dbMap->hasTable(BaseWidgetPeer::TABLE_NAME)) {
-        $dbMap->addTableObject(new WidgetTableMap());
+        $dbMap->addTableObject(new \WidgetTableMap());
       }
     }
 
     /**
-     * The returned Class will contain objects of the default type or
-     * objects that inherit from the default.
+     * The class that the Peer will make instances of.
      *
-     * @param      array $row PropelPDO result row.
-     * @param      int $colnum Column to examine for OM class information (first is 0).
-     * @throws PropelException Any exceptions caught during processing will be
-     *		 rethrown wrapped into a PropelException.
+     *
+     * @return string ClassName
      */
     public static function getOMClass($row = 0, $colnum = 0)
     {
-        try {
-
-            $omClass = null;
-            $classKey = $row[$colnum + 5];
-
-            switch ($classKey) {
-
-                case WidgetPeer::CLASSKEY_1:
-                    $omClass = WidgetPeer::CLASSNAME_1;
-                    break;
-
-                case WidgetPeer::CLASSKEY_2:
-                    $omClass = WidgetPeer::CLASSNAME_2;
-                    break;
-
-                case WidgetPeer::CLASSKEY_3:
-                    $omClass = WidgetPeer::CLASSNAME_3;
-                    break;
-
-                default:
-                    $omClass = WidgetPeer::OM_CLASS;
-
-            } // switch
-
-        } catch (Exception $e) {
-            throw new PropelException('Unable to get OM class.', $e);
-        }
-
-        return $omClass;
+        return WidgetPeer::OM_CLASS;
     }
 
     /**
@@ -597,10 +506,6 @@ abstract class BaseWidgetPeer
             $criteria = $values->buildCriteria(); // build Criteria from Widget object
         }
 
-        if ($criteria->containsKey(WidgetPeer::ID) && $criteria->keyContainsValue(WidgetPeer::ID) ) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key ('.WidgetPeer::ID.')');
-        }
-
 
         // Set the correct dbName
         $criteria->setDbName(WidgetPeer::DATABASE_NAME);
@@ -611,7 +516,7 @@ abstract class BaseWidgetPeer
             $con->beginTransaction();
             $pk = BasePeer::doInsert($criteria, $con);
             $con->commit();
-        } catch (PropelException $e) {
+        } catch (Exception $e) {
             $con->rollBack();
             throw $e;
         }
@@ -639,10 +544,10 @@ abstract class BaseWidgetPeer
         if ($values instanceof Criteria) {
             $criteria = clone $values; // rename for clarity
 
-            $comparison = $criteria->getComparison(WidgetPeer::ID);
-            $value = $criteria->remove(WidgetPeer::ID);
+            $comparison = $criteria->getComparison(WidgetPeer::NAME);
+            $value = $criteria->remove(WidgetPeer::NAME);
             if ($value) {
-                $selectCriteria->add(WidgetPeer::ID, $value, $comparison);
+                $selectCriteria->add(WidgetPeer::NAME, $value, $comparison);
             } else {
                 $selectCriteria->setPrimaryTableName(WidgetPeer::TABLE_NAME);
             }
@@ -684,7 +589,7 @@ abstract class BaseWidgetPeer
             $con->commit();
 
             return $affectedRows;
-        } catch (PropelException $e) {
+        } catch (Exception $e) {
             $con->rollBack();
             throw $e;
         }
@@ -721,7 +626,7 @@ abstract class BaseWidgetPeer
             $criteria = $values->buildPkeyCriteria();
         } else { // it's a primary key, or an array of pks
             $criteria = new Criteria(WidgetPeer::DATABASE_NAME);
-            $criteria->add(WidgetPeer::ID, (array) $values, Criteria::IN);
+            $criteria->add(WidgetPeer::NAME, (array) $values, Criteria::IN);
             // invalidate the cache for this object(s)
             foreach ((array) $values as $singleval) {
                 WidgetPeer::removeInstanceFromPool($singleval);
@@ -743,7 +648,7 @@ abstract class BaseWidgetPeer
             $con->commit();
 
             return $affectedRows;
-        } catch (PropelException $e) {
+        } catch (Exception $e) {
             $con->rollBack();
             throw $e;
         }
@@ -756,7 +661,7 @@ abstract class BaseWidgetPeer
      *
      * NOTICE: This does not apply to primary or foreign keys for now.
      *
-     * @param      Widget $obj The object to validate.
+     * @param Widget $obj The object to validate.
      * @param      mixed $cols Column name or array of column names.
      *
      * @return mixed TRUE if all columns are valid or the error message of the first invalid column.
@@ -789,7 +694,7 @@ abstract class BaseWidgetPeer
     /**
      * Retrieve a single object by pkey.
      *
-     * @param      int $pk the primary key.
+     * @param string $pk the primary key.
      * @param      PropelPDO $con the connection to use
      * @return Widget
      */
@@ -805,7 +710,7 @@ abstract class BaseWidgetPeer
         }
 
         $criteria = new Criteria(WidgetPeer::DATABASE_NAME);
-        $criteria->add(WidgetPeer::ID, $pk);
+        $criteria->add(WidgetPeer::NAME, $pk);
 
         $v = WidgetPeer::doSelect($criteria, $con);
 
@@ -832,7 +737,7 @@ abstract class BaseWidgetPeer
             $objs = array();
         } else {
             $criteria = new Criteria(WidgetPeer::DATABASE_NAME);
-            $criteria->add(WidgetPeer::ID, $pks, Criteria::IN);
+            $criteria->add(WidgetPeer::NAME, $pks, Criteria::IN);
             $objs = WidgetPeer::doSelect($criteria, $con);
         }
 

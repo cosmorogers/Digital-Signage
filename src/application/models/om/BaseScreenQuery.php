@@ -63,8 +63,14 @@ abstract class BaseScreenQuery extends ModelCriteria
      * @param     string $modelName The phpName of a model, e.g. 'Book'
      * @param     string $modelAlias The alias for the model in this query, e.g. 'b'
      */
-    public function __construct($dbName = 'signage', $modelName = 'Screen', $modelAlias = null)
+    public function __construct($dbName = null, $modelName = null, $modelAlias = null)
     {
+        if (null === $dbName) {
+            $dbName = 'signage';
+        }
+        if (null === $modelName) {
+            $modelName = 'Screen';
+        }
         parent::__construct($dbName, $modelName, $modelAlias);
     }
 
@@ -81,10 +87,8 @@ abstract class BaseScreenQuery extends ModelCriteria
         if ($criteria instanceof ScreenQuery) {
             return $criteria;
         }
-        $query = new ScreenQuery();
-        if (null !== $modelAlias) {
-            $query->setModelAlias($modelAlias);
-        }
+        $query = new ScreenQuery(null, null, $modelAlias);
+
         if ($criteria instanceof Criteria) {
             $query->mergeWith($criteria);
         }
@@ -112,7 +116,7 @@ abstract class BaseScreenQuery extends ModelCriteria
             return null;
         }
         if ((null !== ($obj = ScreenPeer::getInstanceFromPool((string) $key))) && !$this->formatter) {
-            // the object is alredy in the instance pool
+            // the object is already in the instance pool
             return $obj;
         }
         if ($con === null) {
@@ -476,7 +480,7 @@ abstract class BaseScreenQuery extends ModelCriteria
      * <code>
      * $query->filterByLastSeen('2011-03-14'); // WHERE last_seen = '2011-03-14'
      * $query->filterByLastSeen('now'); // WHERE last_seen = '2011-03-14'
-     * $query->filterByLastSeen(array('max' => 'yesterday')); // WHERE last_seen > '2011-03-13'
+     * $query->filterByLastSeen(array('max' => 'yesterday')); // WHERE last_seen < '2011-03-13'
      * </code>
      *
      * @param     mixed $lastSeen The value to use as filter.

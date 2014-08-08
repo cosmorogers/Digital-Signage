@@ -11,7 +11,9 @@ $header = array (
 		),
 		'sidemenu' => 'screens'
 );
-$this->view('templates/header', $header); 
+$this->view('templates/header', $header);
+
+$forms = array();
 ?>
 
 	<div class=" span3">
@@ -19,37 +21,18 @@ $this->view('templates/header', $header);
 		<p>To activate a widget on this template drag it over to the content area you would like it to appear in.</p>
 
 		<div class="widget-list" id="availableWidgets">
+            <?php
+            foreach ($widgets as $widget) :
+                $widgetClass =$widget->getClass();
+            ?>
 			<div class="panel">
-				<?php $widget = new MessageWidget(); ?>
-				<h4 class="popover-title"><?php echo $widget->getWidgetName(); ?></h4>
-				<div class="popover-content widget-desc">
-					<?php echo $widget->getWidgetDescription(); ?>
+				<h4 class="popover-title"><?php echo $widgetClass->getName(); ?></h4>
+				<div class="popover-content widget-desc" data-widget="<?php echo $widgetClass->getName();?>">
+					<?php echo $widgetClass->getDescription(); ?>
 				</div>
+                <?php $forms[$widgetClass->getName()] = $widgetClass->form(null); ?>
 			</div>
-			<div class="panel">
-				<h4 class="popover-title">Slideshow</h4>
-				<div class="popover-content widget-desc">
-					Display a choosen slideshow
-				</div>
-			</div>
-			<div class="panel">
-				<h4 class="popover-title">Weather</h4>
-				<div class="popover-content widget-desc">
-					Display a weather forecast. Will automatically adjust to the size available.
-				</div>
-			</div>
-			<div class="panel">
-				<h4 class="popover-title">Time</h4>
-				<div class="popover-content widget-desc">
-					Display a clock or textual time
-				</div>
-			</div>
-			<div class="panel">
-				<h4 class="popover-title">Daily Quote</h4>
-				<div class="popover-content widget-desc">
-					Display a random daily quote
-				</div>
-			</div>
+            <?php endforeach; ?>
 		</div>
 	</div>
 
@@ -58,40 +41,41 @@ $this->view('templates/header', $header);
 			<div class="span4 panel">
 				
 				<div class="popover-content">
-					<h4 ><?php echo ucfirst($container['name']); ?> Widget Area</h4>
+					<h4 ><?php echo ucfirst($container['name']); ?> Widget Container</h4>
 					<p class="muted"><?php echo $container['desc'];?></p>
 					<br />
 
-					<div class="layout-container">
-
+					<div class="layout-container" style="min-height:40px;" data-template-id="<?php echo $template->getId(); ?>" data-template-container="<?php echo $container['name']; ?>">
+                        <?php
+                        foreach ($template_widgets as $widget) :
+                            if ($widget->getContainer() == $container['name']) :
+                        ?>
 						<div class="panel">
 							<h4 class="popover-title">
-								Messages
+								<?php echo $widget->getClass()->getName(); ?>
 								<i class="icon-chevron-up pull-right panel-collapse"></i>
 							</h4>
 							<div class="popover-content">
 							    <form>
 									<fieldset>
-										<label>Display Time</label>
-										<input type="number" value="4">
-										<span class="help-block">How long to display each message</span>
-										<button type="submit" class="btn btn-primary">Save</button>
-										<button type="submit" class="btn btn-danger pull-right"><i class="icon-trash icon-white"></i></button>
-									</fieldset>
+                                        <?php echo $widget->getClass()->getForm(); ?>
+                                    </fieldset>
 								</form>
 							</div>
 						</div>
+                        <?php endif;?>
+                        <?php endforeach; ?>
 					</div>
 				</div>
 			</div>
 		<?php endforeach; ?>
 	</div>
 
-<script type="text/javascript">
-var widgets = <?php echo json_encode($widget->getWidgetForm()); ?>
+<script>
+    var forms = <?php echo json_encode($forms);?>;
+    var addWidget = <?php echo site_url('templates/addWidget'); ?>
 </script>
-
-<?php 
+<?php
 $js = array('edit-template.js');
 $this->view('templates/footer', array ('js' => array('edit-template.js')));
 ?>

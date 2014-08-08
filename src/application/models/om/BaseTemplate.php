@@ -24,7 +24,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     protected static $peer;
 
     /**
-     * The flag var to prevent infinit loop in deep copy
+     * The flag var to prevent infinite loop in deep copy
      * @var       boolean
      */
     protected $startCopy = false;
@@ -42,16 +42,16 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     protected $name;
 
     /**
-     * The value for the width field.
-     * @var        int
+     * The value for the layout field.
+     * @var        string
      */
-    protected $width;
+    protected $layout;
 
     /**
-     * The value for the height field.
-     * @var        int
+     * @var        PropelObjectCollection|TemplateWidget[] Collection to store aggregation of TemplateWidget objects.
      */
-    protected $height;
+    protected $collTemplateWidgets;
+    protected $collTemplateWidgetsPartial;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -74,12 +74,19 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     protected $alreadyInClearAllReferencesDeep = false;
 
     /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $templateWidgetsScheduledForDeletion = null;
+
+    /**
      * Get the [id] column value.
      *
      * @return int
      */
     public function getId()
     {
+
         return $this->id;
     }
 
@@ -90,33 +97,25 @@ abstract class BaseTemplate extends BaseObject implements Persistent
      */
     public function getName()
     {
+
         return $this->name;
     }
 
     /**
-     * Get the [width] column value.
+     * Get the [layout] column value.
      *
-     * @return int
+     * @return string
      */
-    public function getWidth()
+    public function getLayout()
     {
-        return $this->width;
-    }
 
-    /**
-     * Get the [height] column value.
-     *
-     * @return int
-     */
-    public function getHeight()
-    {
-        return $this->height;
+        return $this->layout;
     }
 
     /**
      * Set the value of [id] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Template The current object (for fluent API support)
      */
     public function setId($v)
@@ -137,12 +136,12 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     /**
      * Set the value of [name] column.
      *
-     * @param string $v new value
+     * @param  string $v new value
      * @return Template The current object (for fluent API support)
      */
     public function setName($v)
     {
-        if ($v !== null && is_numeric($v)) {
+        if ($v !== null) {
             $v = (string) $v;
         }
 
@@ -156,46 +155,25 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     } // setName()
 
     /**
-     * Set the value of [width] column.
+     * Set the value of [layout] column.
      *
-     * @param int $v new value
+     * @param  string $v new value
      * @return Template The current object (for fluent API support)
      */
-    public function setWidth($v)
+    public function setLayout($v)
     {
-        if ($v !== null && is_numeric($v)) {
-            $v = (int) $v;
+        if ($v !== null) {
+            $v = (string) $v;
         }
 
-        if ($this->width !== $v) {
-            $this->width = $v;
-            $this->modifiedColumns[] = TemplatePeer::WIDTH;
+        if ($this->layout !== $v) {
+            $this->layout = $v;
+            $this->modifiedColumns[] = TemplatePeer::LAYOUT;
         }
 
 
         return $this;
-    } // setWidth()
-
-    /**
-     * Set the value of [height] column.
-     *
-     * @param int $v new value
-     * @return Template The current object (for fluent API support)
-     */
-    public function setHeight($v)
-    {
-        if ($v !== null && is_numeric($v)) {
-            $v = (int) $v;
-        }
-
-        if ($this->height !== $v) {
-            $this->height = $v;
-            $this->modifiedColumns[] = TemplatePeer::HEIGHT;
-        }
-
-
-        return $this;
-    } // setHeight()
+    } // setLayout()
 
     /**
      * Indicates whether the columns in this object are only set to default values.
@@ -220,7 +198,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
      * more tables.
      *
      * @param array $row The row returned by PDOStatement->fetch(PDO::FETCH_NUM)
-     * @param int $startcol 0-based offset column which indicates which restultset column to start with.
+     * @param int $startcol 0-based offset column which indicates which resultset column to start with.
      * @param boolean $rehydrate Whether this object is being re-hydrated from the database.
      * @return int             next starting column
      * @throws PropelException - Any caught Exception will be rewrapped as a PropelException.
@@ -231,8 +209,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
 
             $this->id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
             $this->name = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-            $this->width = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
-            $this->height = ($row[$startcol + 3] !== null) ? (int) $row[$startcol + 3] : null;
+            $this->layout = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -241,7 +218,8 @@ abstract class BaseTemplate extends BaseObject implements Persistent
                 $this->ensureConsistency();
             }
             $this->postHydrate($row, $startcol, $rehydrate);
-            return $startcol + 4; // 4 = TemplatePeer::NUM_HYDRATE_COLUMNS.
+
+            return $startcol + 3; // 3 = TemplatePeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
             throw new PropelException("Error populating Template object", $e);
@@ -302,6 +280,8 @@ abstract class BaseTemplate extends BaseObject implements Persistent
         $this->hydrate($row, 0, true); // rehydrate
 
         if ($deep) {  // also de-associate any related objects?
+
+            $this->collTemplateWidgets = null;
 
         } // if (deep)
     }
@@ -427,6 +407,23 @@ abstract class BaseTemplate extends BaseObject implements Persistent
                 $this->resetModified();
             }
 
+            if ($this->templateWidgetsScheduledForDeletion !== null) {
+                if (!$this->templateWidgetsScheduledForDeletion->isEmpty()) {
+                    TemplateWidgetQuery::create()
+                        ->filterByPrimaryKeys($this->templateWidgetsScheduledForDeletion->getPrimaryKeys(false))
+                        ->delete($con);
+                    $this->templateWidgetsScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collTemplateWidgets !== null) {
+                foreach ($this->collTemplateWidgets as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
             $this->alreadyInSave = false;
 
         }
@@ -459,11 +456,8 @@ abstract class BaseTemplate extends BaseObject implements Persistent
         if ($this->isColumnModified(TemplatePeer::NAME)) {
             $modifiedColumns[':p' . $index++]  = '`name`';
         }
-        if ($this->isColumnModified(TemplatePeer::WIDTH)) {
-            $modifiedColumns[':p' . $index++]  = '`width`';
-        }
-        if ($this->isColumnModified(TemplatePeer::HEIGHT)) {
-            $modifiedColumns[':p' . $index++]  = '`height`';
+        if ($this->isColumnModified(TemplatePeer::LAYOUT)) {
+            $modifiedColumns[':p' . $index++]  = '`layout`';
         }
 
         $sql = sprintf(
@@ -482,11 +476,8 @@ abstract class BaseTemplate extends BaseObject implements Persistent
                     case '`name`':
                         $stmt->bindValue($identifier, $this->name, PDO::PARAM_STR);
                         break;
-                    case '`width`':
-                        $stmt->bindValue($identifier, $this->width, PDO::PARAM_INT);
-                        break;
-                    case '`height`':
-                        $stmt->bindValue($identifier, $this->height, PDO::PARAM_INT);
+                    case '`layout`':
+                        $stmt->bindValue($identifier, $this->layout, PDO::PARAM_STR);
                         break;
                 }
             }
@@ -568,10 +559,10 @@ abstract class BaseTemplate extends BaseObject implements Persistent
      *
      * In addition to checking the current object, all related objects will
      * also be validated.  If all pass then <code>true</code> is returned; otherwise
-     * an aggreagated array of ValidationFailed objects will be returned.
+     * an aggregated array of ValidationFailed objects will be returned.
      *
      * @param array $columns Array of column names to validate.
-     * @return mixed <code>true</code> if all validations pass; array of <code>ValidationFailed</code> objets otherwise.
+     * @return mixed <code>true</code> if all validations pass; array of <code>ValidationFailed</code> objects otherwise.
      */
     protected function doValidate($columns = null)
     {
@@ -586,6 +577,14 @@ abstract class BaseTemplate extends BaseObject implements Persistent
                 $failureMap = array_merge($failureMap, $retval);
             }
 
+
+                if ($this->collTemplateWidgets !== null) {
+                    foreach ($this->collTemplateWidgets as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
 
 
             $this->alreadyInValidation = false;
@@ -629,10 +628,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
                 return $this->getName();
                 break;
             case 2:
-                return $this->getWidth();
-                break;
-            case 3:
-                return $this->getHeight();
+                return $this->getLayout();
                 break;
             default:
                 return null;
@@ -651,10 +647,11 @@ abstract class BaseTemplate extends BaseObject implements Persistent
      *                    Defaults to BasePeer::TYPE_PHPNAME.
      * @param     boolean $includeLazyLoadColumns (optional) Whether to include lazy loaded columns. Defaults to true.
      * @param     array $alreadyDumpedObjects List of objects to skip to avoid recursion
+     * @param     boolean $includeForeignObjects (optional) Whether to include hydrated related objects. Default to FALSE.
      *
      * @return array an associative array containing the field names (as keys) and field values
      */
-    public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array())
+    public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
         if (isset($alreadyDumpedObjects['Template'][$this->getPrimaryKey()])) {
             return '*RECURSION*';
@@ -664,9 +661,18 @@ abstract class BaseTemplate extends BaseObject implements Persistent
         $result = array(
             $keys[0] => $this->getId(),
             $keys[1] => $this->getName(),
-            $keys[2] => $this->getWidth(),
-            $keys[3] => $this->getHeight(),
+            $keys[2] => $this->getLayout(),
         );
+        $virtualColumns = $this->virtualColumns;
+        foreach ($virtualColumns as $key => $virtualColumn) {
+            $result[$key] = $virtualColumn;
+        }
+
+        if ($includeForeignObjects) {
+            if (null !== $this->collTemplateWidgets) {
+                $result['TemplateWidgets'] = $this->collTemplateWidgets->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+        }
 
         return $result;
     }
@@ -707,10 +713,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
                 $this->setName($value);
                 break;
             case 2:
-                $this->setWidth($value);
-                break;
-            case 3:
-                $this->setHeight($value);
+                $this->setLayout($value);
                 break;
         } // switch()
     }
@@ -738,8 +741,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
         if (array_key_exists($keys[1], $arr)) $this->setName($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setWidth($arr[$keys[2]]);
-        if (array_key_exists($keys[3], $arr)) $this->setHeight($arr[$keys[3]]);
+        if (array_key_exists($keys[2], $arr)) $this->setLayout($arr[$keys[2]]);
     }
 
     /**
@@ -753,8 +755,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
 
         if ($this->isColumnModified(TemplatePeer::ID)) $criteria->add(TemplatePeer::ID, $this->id);
         if ($this->isColumnModified(TemplatePeer::NAME)) $criteria->add(TemplatePeer::NAME, $this->name);
-        if ($this->isColumnModified(TemplatePeer::WIDTH)) $criteria->add(TemplatePeer::WIDTH, $this->width);
-        if ($this->isColumnModified(TemplatePeer::HEIGHT)) $criteria->add(TemplatePeer::HEIGHT, $this->height);
+        if ($this->isColumnModified(TemplatePeer::LAYOUT)) $criteria->add(TemplatePeer::LAYOUT, $this->layout);
 
         return $criteria;
     }
@@ -819,8 +820,25 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
         $copyObj->setName($this->getName());
-        $copyObj->setWidth($this->getWidth());
-        $copyObj->setHeight($this->getHeight());
+        $copyObj->setLayout($this->getLayout());
+
+        if ($deepCopy && !$this->startCopy) {
+            // important: temporarily setNew(false) because this affects the behavior of
+            // the getter/setter methods for fkey referrer objects.
+            $copyObj->setNew(false);
+            // store object hash to prevent cycle
+            $this->startCopy = true;
+
+            foreach ($this->getTemplateWidgets() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addTemplateWidget($relObj->copy($deepCopy));
+                }
+            }
+
+            //unflag object copy
+            $this->startCopy = false;
+        } // if ($deepCopy)
+
         if ($makeNew) {
             $copyObj->setNew(true);
             $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
@@ -867,6 +885,272 @@ abstract class BaseTemplate extends BaseObject implements Persistent
         return self::$peer;
     }
 
+
+    /**
+     * Initializes a collection based on the name of a relation.
+     * Avoids crafting an 'init[$relationName]s' method name
+     * that wouldn't work when StandardEnglishPluralizer is used.
+     *
+     * @param string $relationName The name of the relation to initialize
+     * @return void
+     */
+    public function initRelation($relationName)
+    {
+        if ('TemplateWidget' == $relationName) {
+            $this->initTemplateWidgets();
+        }
+    }
+
+    /**
+     * Clears out the collTemplateWidgets collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Template The current object (for fluent API support)
+     * @see        addTemplateWidgets()
+     */
+    public function clearTemplateWidgets()
+    {
+        $this->collTemplateWidgets = null; // important to set this to null since that means it is uninitialized
+        $this->collTemplateWidgetsPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collTemplateWidgets collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialTemplateWidgets($v = true)
+    {
+        $this->collTemplateWidgetsPartial = $v;
+    }
+
+    /**
+     * Initializes the collTemplateWidgets collection.
+     *
+     * By default this just sets the collTemplateWidgets collection to an empty array (like clearcollTemplateWidgets());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initTemplateWidgets($overrideExisting = true)
+    {
+        if (null !== $this->collTemplateWidgets && !$overrideExisting) {
+            return;
+        }
+        $this->collTemplateWidgets = new PropelObjectCollection();
+        $this->collTemplateWidgets->setModel('TemplateWidget');
+    }
+
+    /**
+     * Gets an array of TemplateWidget objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Template is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|TemplateWidget[] List of TemplateWidget objects
+     * @throws PropelException
+     */
+    public function getTemplateWidgets($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collTemplateWidgetsPartial && !$this->isNew();
+        if (null === $this->collTemplateWidgets || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collTemplateWidgets) {
+                // return empty collection
+                $this->initTemplateWidgets();
+            } else {
+                $collTemplateWidgets = TemplateWidgetQuery::create(null, $criteria)
+                    ->filterByTemplate($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collTemplateWidgetsPartial && count($collTemplateWidgets)) {
+                      $this->initTemplateWidgets(false);
+
+                      foreach ($collTemplateWidgets as $obj) {
+                        if (false == $this->collTemplateWidgets->contains($obj)) {
+                          $this->collTemplateWidgets->append($obj);
+                        }
+                      }
+
+                      $this->collTemplateWidgetsPartial = true;
+                    }
+
+                    $collTemplateWidgets->getInternalIterator()->rewind();
+
+                    return $collTemplateWidgets;
+                }
+
+                if ($partial && $this->collTemplateWidgets) {
+                    foreach ($this->collTemplateWidgets as $obj) {
+                        if ($obj->isNew()) {
+                            $collTemplateWidgets[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collTemplateWidgets = $collTemplateWidgets;
+                $this->collTemplateWidgetsPartial = false;
+            }
+        }
+
+        return $this->collTemplateWidgets;
+    }
+
+    /**
+     * Sets a collection of TemplateWidget objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $templateWidgets A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Template The current object (for fluent API support)
+     */
+    public function setTemplateWidgets(PropelCollection $templateWidgets, PropelPDO $con = null)
+    {
+        $templateWidgetsToDelete = $this->getTemplateWidgets(new Criteria(), $con)->diff($templateWidgets);
+
+
+        $this->templateWidgetsScheduledForDeletion = $templateWidgetsToDelete;
+
+        foreach ($templateWidgetsToDelete as $templateWidgetRemoved) {
+            $templateWidgetRemoved->setTemplate(null);
+        }
+
+        $this->collTemplateWidgets = null;
+        foreach ($templateWidgets as $templateWidget) {
+            $this->addTemplateWidget($templateWidget);
+        }
+
+        $this->collTemplateWidgets = $templateWidgets;
+        $this->collTemplateWidgetsPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related TemplateWidget objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related TemplateWidget objects.
+     * @throws PropelException
+     */
+    public function countTemplateWidgets(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collTemplateWidgetsPartial && !$this->isNew();
+        if (null === $this->collTemplateWidgets || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collTemplateWidgets) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getTemplateWidgets());
+            }
+            $query = TemplateWidgetQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByTemplate($this)
+                ->count($con);
+        }
+
+        return count($this->collTemplateWidgets);
+    }
+
+    /**
+     * Method called to associate a TemplateWidget object to this object
+     * through the TemplateWidget foreign key attribute.
+     *
+     * @param    TemplateWidget $l TemplateWidget
+     * @return Template The current object (for fluent API support)
+     */
+    public function addTemplateWidget(TemplateWidget $l)
+    {
+        if ($this->collTemplateWidgets === null) {
+            $this->initTemplateWidgets();
+            $this->collTemplateWidgetsPartial = true;
+        }
+
+        if (!in_array($l, $this->collTemplateWidgets->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddTemplateWidget($l);
+
+            if ($this->templateWidgetsScheduledForDeletion and $this->templateWidgetsScheduledForDeletion->contains($l)) {
+                $this->templateWidgetsScheduledForDeletion->remove($this->templateWidgetsScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	TemplateWidget $templateWidget The templateWidget object to add.
+     */
+    protected function doAddTemplateWidget($templateWidget)
+    {
+        $this->collTemplateWidgets[]= $templateWidget;
+        $templateWidget->setTemplate($this);
+    }
+
+    /**
+     * @param	TemplateWidget $templateWidget The templateWidget object to remove.
+     * @return Template The current object (for fluent API support)
+     */
+    public function removeTemplateWidget($templateWidget)
+    {
+        if ($this->getTemplateWidgets()->contains($templateWidget)) {
+            $this->collTemplateWidgets->remove($this->collTemplateWidgets->search($templateWidget));
+            if (null === $this->templateWidgetsScheduledForDeletion) {
+                $this->templateWidgetsScheduledForDeletion = clone $this->collTemplateWidgets;
+                $this->templateWidgetsScheduledForDeletion->clear();
+            }
+            $this->templateWidgetsScheduledForDeletion[]= $templateWidget;
+            $templateWidget->setTemplate(null);
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Template is new, it will return
+     * an empty collection; or if this Template has previously
+     * been saved, it will retrieve related TemplateWidgets from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Template.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|TemplateWidget[] List of TemplateWidget objects
+     */
+    public function getTemplateWidgetsJoinWidget($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = TemplateWidgetQuery::create(null, $criteria);
+        $query->joinWith('Widget', $join_behavior);
+
+        return $this->getTemplateWidgets($query, $con);
+    }
+
     /**
      * Clears the current object and sets all attributes to their default values
      */
@@ -874,8 +1158,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     {
         $this->id = null;
         $this->name = null;
-        $this->width = null;
-        $this->height = null;
+        $this->layout = null;
         $this->alreadyInSave = false;
         $this->alreadyInValidation = false;
         $this->alreadyInClearAllReferencesDeep = false;
@@ -890,7 +1173,7 @@ abstract class BaseTemplate extends BaseObject implements Persistent
      *
      * This method is a user-space workaround for PHP's inability to garbage collect
      * objects with circular references (even in PHP 5.3). This is currently necessary
-     * when using Propel in certain daemon or large-volumne/high-memory operations.
+     * when using Propel in certain daemon or large-volume/high-memory operations.
      *
      * @param boolean $deep Whether to also clear the references on all referrer objects.
      */
@@ -898,10 +1181,19 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     {
         if ($deep && !$this->alreadyInClearAllReferencesDeep) {
             $this->alreadyInClearAllReferencesDeep = true;
+            if ($this->collTemplateWidgets) {
+                foreach ($this->collTemplateWidgets as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
 
             $this->alreadyInClearAllReferencesDeep = false;
         } // if ($deep)
 
+        if ($this->collTemplateWidgets instanceof PropelCollection) {
+            $this->collTemplateWidgets->clearIterator();
+        }
+        $this->collTemplateWidgets = null;
     }
 
     /**

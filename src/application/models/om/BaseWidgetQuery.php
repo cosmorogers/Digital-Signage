@@ -6,39 +6,23 @@
  *
  *
  *
- * @method WidgetQuery orderById($order = Criteria::ASC) Order by the id column
- * @method WidgetQuery orderByPosX($order = Criteria::ASC) Order by the pos_x column
- * @method WidgetQuery orderByPosY($order = Criteria::ASC) Order by the pos_y column
- * @method WidgetQuery orderByWidth($order = Criteria::ASC) Order by the width column
- * @method WidgetQuery orderByHeight($order = Criteria::ASC) Order by the height column
- * @method WidgetQuery orderByClassKey($order = Criteria::ASC) Order by the class_key column
+ * @method WidgetQuery orderByName($order = Criteria::ASC) Order by the name column
  *
- * @method WidgetQuery groupById() Group by the id column
- * @method WidgetQuery groupByPosX() Group by the pos_x column
- * @method WidgetQuery groupByPosY() Group by the pos_y column
- * @method WidgetQuery groupByWidth() Group by the width column
- * @method WidgetQuery groupByHeight() Group by the height column
- * @method WidgetQuery groupByClassKey() Group by the class_key column
+ * @method WidgetQuery groupByName() Group by the name column
  *
  * @method WidgetQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method WidgetQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method WidgetQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
+ * @method WidgetQuery leftJoinTemplateWidget($relationAlias = null) Adds a LEFT JOIN clause to the query using the TemplateWidget relation
+ * @method WidgetQuery rightJoinTemplateWidget($relationAlias = null) Adds a RIGHT JOIN clause to the query using the TemplateWidget relation
+ * @method WidgetQuery innerJoinTemplateWidget($relationAlias = null) Adds a INNER JOIN clause to the query using the TemplateWidget relation
+ *
  * @method Widget findOne(PropelPDO $con = null) Return the first Widget matching the query
  * @method Widget findOneOrCreate(PropelPDO $con = null) Return the first Widget matching the query, or a new Widget object populated from the query conditions when no match is found
  *
- * @method Widget findOneByPosX(int $pos_x) Return the first Widget filtered by the pos_x column
- * @method Widget findOneByPosY(int $pos_y) Return the first Widget filtered by the pos_y column
- * @method Widget findOneByWidth(int $width) Return the first Widget filtered by the width column
- * @method Widget findOneByHeight(int $height) Return the first Widget filtered by the height column
- * @method Widget findOneByClassKey(int $class_key) Return the first Widget filtered by the class_key column
  *
- * @method array findById(int $id) Return Widget objects filtered by the id column
- * @method array findByPosX(int $pos_x) Return Widget objects filtered by the pos_x column
- * @method array findByPosY(int $pos_y) Return Widget objects filtered by the pos_y column
- * @method array findByWidth(int $width) Return Widget objects filtered by the width column
- * @method array findByHeight(int $height) Return Widget objects filtered by the height column
- * @method array findByClassKey(int $class_key) Return Widget objects filtered by the class_key column
+ * @method array findByName(string $name) Return Widget objects filtered by the name column
  *
  * @package    propel.generator..om
  */
@@ -51,8 +35,14 @@ abstract class BaseWidgetQuery extends ModelCriteria
      * @param     string $modelName The phpName of a model, e.g. 'Book'
      * @param     string $modelAlias The alias for the model in this query, e.g. 'b'
      */
-    public function __construct($dbName = 'signage', $modelName = 'Widget', $modelAlias = null)
+    public function __construct($dbName = null, $modelName = null, $modelAlias = null)
     {
+        if (null === $dbName) {
+            $dbName = 'signage';
+        }
+        if (null === $modelName) {
+            $modelName = 'Widget';
+        }
         parent::__construct($dbName, $modelName, $modelAlias);
     }
 
@@ -69,10 +59,8 @@ abstract class BaseWidgetQuery extends ModelCriteria
         if ($criteria instanceof WidgetQuery) {
             return $criteria;
         }
-        $query = new WidgetQuery();
-        if (null !== $modelAlias) {
-            $query->setModelAlias($modelAlias);
-        }
+        $query = new WidgetQuery(null, null, $modelAlias);
+
         if ($criteria instanceof Criteria) {
             $query->mergeWith($criteria);
         }
@@ -100,7 +88,7 @@ abstract class BaseWidgetQuery extends ModelCriteria
             return null;
         }
         if ((null !== ($obj = WidgetPeer::getInstanceFromPool((string) $key))) && !$this->formatter) {
-            // the object is alredy in the instance pool
+            // the object is already in the instance pool
             return $obj;
         }
         if ($con === null) {
@@ -125,7 +113,7 @@ abstract class BaseWidgetQuery extends ModelCriteria
      * @return                 Widget A model object, or null if the key is not found
      * @throws PropelException
      */
-     public function findOneById($key, $con = null)
+     public function findOneByName($key, $con = null)
      {
         return $this->findPk($key, $con);
      }
@@ -142,10 +130,10 @@ abstract class BaseWidgetQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT `id`, `pos_x`, `pos_y`, `width`, `height`, `class_key` FROM `widget` WHERE `id` = :p0';
+        $sql = 'SELECT `name` FROM `widget` WHERE `name` = :p0';
         try {
             $stmt = $con->prepare($sql);
-            $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
+            $stmt->bindValue(':p0', $key, PDO::PARAM_STR);
             $stmt->execute();
         } catch (Exception $e) {
             Propel::log($e->getMessage(), Propel::LOG_ERR);
@@ -153,8 +141,7 @@ abstract class BaseWidgetQuery extends ModelCriteria
         }
         $obj = null;
         if ($row = $stmt->fetch(PDO::FETCH_NUM)) {
-            $cls = WidgetPeer::getOMClass($row, 0);
-            $obj = new $cls();
+            $obj = new Widget();
             $obj->hydrate($row);
             WidgetPeer::addInstanceToPool($obj, (string) $key);
         }
@@ -216,7 +203,7 @@ abstract class BaseWidgetQuery extends ModelCriteria
     public function filterByPrimaryKey($key)
     {
 
-        return $this->addUsingAlias(WidgetPeer::ID, $key, Criteria::EQUAL);
+        return $this->addUsingAlias(WidgetPeer::NAME, $key, Criteria::EQUAL);
     }
 
     /**
@@ -229,259 +216,110 @@ abstract class BaseWidgetQuery extends ModelCriteria
     public function filterByPrimaryKeys($keys)
     {
 
-        return $this->addUsingAlias(WidgetPeer::ID, $keys, Criteria::IN);
+        return $this->addUsingAlias(WidgetPeer::NAME, $keys, Criteria::IN);
     }
 
     /**
-     * Filter the query on the id column
+     * Filter the query on the name column
      *
      * Example usage:
      * <code>
-     * $query->filterById(1234); // WHERE id = 1234
-     * $query->filterById(array(12, 34)); // WHERE id IN (12, 34)
-     * $query->filterById(array('min' => 12)); // WHERE id >= 12
-     * $query->filterById(array('max' => 12)); // WHERE id <= 12
+     * $query->filterByName('fooValue');   // WHERE name = 'fooValue'
+     * $query->filterByName('%fooValue%'); // WHERE name LIKE '%fooValue%'
      * </code>
      *
-     * @param     mixed $id The value to use as filter.
-     *              Use scalar values for equality.
-     *              Use array values for in_array() equivalent.
-     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $name The value to use as filter.
+     *              Accepts wildcards (* and % trigger a LIKE)
      * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
      * @return WidgetQuery The current query, for fluid interface
      */
-    public function filterById($id = null, $comparison = null)
+    public function filterByName($name = null, $comparison = null)
     {
-        if (is_array($id)) {
-            $useMinMax = false;
-            if (isset($id['min'])) {
-                $this->addUsingAlias(WidgetPeer::ID, $id['min'], Criteria::GREATER_EQUAL);
-                $useMinMax = true;
-            }
-            if (isset($id['max'])) {
-                $this->addUsingAlias(WidgetPeer::ID, $id['max'], Criteria::LESS_EQUAL);
-                $useMinMax = true;
-            }
-            if ($useMinMax) {
-                return $this;
-            }
-            if (null === $comparison) {
+        if (null === $comparison) {
+            if (is_array($name)) {
                 $comparison = Criteria::IN;
+            } elseif (preg_match('/[\%\*]/', $name)) {
+                $name = str_replace('*', '%', $name);
+                $comparison = Criteria::LIKE;
             }
         }
 
-        return $this->addUsingAlias(WidgetPeer::ID, $id, $comparison);
+        return $this->addUsingAlias(WidgetPeer::NAME, $name, $comparison);
     }
 
     /**
-     * Filter the query on the pos_x column
+     * Filter the query by a related TemplateWidget object
      *
-     * Example usage:
-     * <code>
-     * $query->filterByPosX(1234); // WHERE pos_x = 1234
-     * $query->filterByPosX(array(12, 34)); // WHERE pos_x IN (12, 34)
-     * $query->filterByPosX(array('min' => 12)); // WHERE pos_x >= 12
-     * $query->filterByPosX(array('max' => 12)); // WHERE pos_x <= 12
-     * </code>
-     *
-     * @param     mixed $posX The value to use as filter.
-     *              Use scalar values for equality.
-     *              Use array values for in_array() equivalent.
-     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param   TemplateWidget|PropelObjectCollection $templateWidget  the related object to use as filter
      * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
-     * @return WidgetQuery The current query, for fluid interface
+     * @return                 WidgetQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
      */
-    public function filterByPosX($posX = null, $comparison = null)
+    public function filterByTemplateWidget($templateWidget, $comparison = null)
     {
-        if (is_array($posX)) {
-            $useMinMax = false;
-            if (isset($posX['min'])) {
-                $this->addUsingAlias(WidgetPeer::POS_X, $posX['min'], Criteria::GREATER_EQUAL);
-                $useMinMax = true;
-            }
-            if (isset($posX['max'])) {
-                $this->addUsingAlias(WidgetPeer::POS_X, $posX['max'], Criteria::LESS_EQUAL);
-                $useMinMax = true;
-            }
-            if ($useMinMax) {
-                return $this;
-            }
-            if (null === $comparison) {
-                $comparison = Criteria::IN;
-            }
+        if ($templateWidget instanceof TemplateWidget) {
+            return $this
+                ->addUsingAlias(WidgetPeer::NAME, $templateWidget->getWidgetName(), $comparison);
+        } elseif ($templateWidget instanceof PropelObjectCollection) {
+            return $this
+                ->useTemplateWidgetQuery()
+                ->filterByPrimaryKeys($templateWidget->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByTemplateWidget() only accepts arguments of type TemplateWidget or PropelCollection');
         }
-
-        return $this->addUsingAlias(WidgetPeer::POS_X, $posX, $comparison);
     }
 
     /**
-     * Filter the query on the pos_y column
+     * Adds a JOIN clause to the query using the TemplateWidget relation
      *
-     * Example usage:
-     * <code>
-     * $query->filterByPosY(1234); // WHERE pos_y = 1234
-     * $query->filterByPosY(array(12, 34)); // WHERE pos_y IN (12, 34)
-     * $query->filterByPosY(array('min' => 12)); // WHERE pos_y >= 12
-     * $query->filterByPosY(array('max' => 12)); // WHERE pos_y <= 12
-     * </code>
-     *
-     * @param     mixed $posY The value to use as filter.
-     *              Use scalar values for equality.
-     *              Use array values for in_array() equivalent.
-     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
      *
      * @return WidgetQuery The current query, for fluid interface
      */
-    public function filterByPosY($posY = null, $comparison = null)
+    public function joinTemplateWidget($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
     {
-        if (is_array($posY)) {
-            $useMinMax = false;
-            if (isset($posY['min'])) {
-                $this->addUsingAlias(WidgetPeer::POS_Y, $posY['min'], Criteria::GREATER_EQUAL);
-                $useMinMax = true;
-            }
-            if (isset($posY['max'])) {
-                $this->addUsingAlias(WidgetPeer::POS_Y, $posY['max'], Criteria::LESS_EQUAL);
-                $useMinMax = true;
-            }
-            if ($useMinMax) {
-                return $this;
-            }
-            if (null === $comparison) {
-                $comparison = Criteria::IN;
-            }
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('TemplateWidget');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
         }
 
-        return $this->addUsingAlias(WidgetPeer::POS_Y, $posY, $comparison);
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'TemplateWidget');
+        }
+
+        return $this;
     }
 
     /**
-     * Filter the query on the width column
+     * Use the TemplateWidget relation TemplateWidget object
      *
-     * Example usage:
-     * <code>
-     * $query->filterByWidth(1234); // WHERE width = 1234
-     * $query->filterByWidth(array(12, 34)); // WHERE width IN (12, 34)
-     * $query->filterByWidth(array('min' => 12)); // WHERE width >= 12
-     * $query->filterByWidth(array('max' => 12)); // WHERE width <= 12
-     * </code>
+     * @see       useQuery()
      *
-     * @param     mixed $width The value to use as filter.
-     *              Use scalar values for equality.
-     *              Use array values for in_array() equivalent.
-     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
      *
-     * @return WidgetQuery The current query, for fluid interface
+     * @return   TemplateWidgetQuery A secondary query class using the current class as primary query
      */
-    public function filterByWidth($width = null, $comparison = null)
+    public function useTemplateWidgetQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
     {
-        if (is_array($width)) {
-            $useMinMax = false;
-            if (isset($width['min'])) {
-                $this->addUsingAlias(WidgetPeer::WIDTH, $width['min'], Criteria::GREATER_EQUAL);
-                $useMinMax = true;
-            }
-            if (isset($width['max'])) {
-                $this->addUsingAlias(WidgetPeer::WIDTH, $width['max'], Criteria::LESS_EQUAL);
-                $useMinMax = true;
-            }
-            if ($useMinMax) {
-                return $this;
-            }
-            if (null === $comparison) {
-                $comparison = Criteria::IN;
-            }
-        }
-
-        return $this->addUsingAlias(WidgetPeer::WIDTH, $width, $comparison);
-    }
-
-    /**
-     * Filter the query on the height column
-     *
-     * Example usage:
-     * <code>
-     * $query->filterByHeight(1234); // WHERE height = 1234
-     * $query->filterByHeight(array(12, 34)); // WHERE height IN (12, 34)
-     * $query->filterByHeight(array('min' => 12)); // WHERE height >= 12
-     * $query->filterByHeight(array('max' => 12)); // WHERE height <= 12
-     * </code>
-     *
-     * @param     mixed $height The value to use as filter.
-     *              Use scalar values for equality.
-     *              Use array values for in_array() equivalent.
-     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-     *
-     * @return WidgetQuery The current query, for fluid interface
-     */
-    public function filterByHeight($height = null, $comparison = null)
-    {
-        if (is_array($height)) {
-            $useMinMax = false;
-            if (isset($height['min'])) {
-                $this->addUsingAlias(WidgetPeer::HEIGHT, $height['min'], Criteria::GREATER_EQUAL);
-                $useMinMax = true;
-            }
-            if (isset($height['max'])) {
-                $this->addUsingAlias(WidgetPeer::HEIGHT, $height['max'], Criteria::LESS_EQUAL);
-                $useMinMax = true;
-            }
-            if ($useMinMax) {
-                return $this;
-            }
-            if (null === $comparison) {
-                $comparison = Criteria::IN;
-            }
-        }
-
-        return $this->addUsingAlias(WidgetPeer::HEIGHT, $height, $comparison);
-    }
-
-    /**
-     * Filter the query on the class_key column
-     *
-     * Example usage:
-     * <code>
-     * $query->filterByClassKey(1234); // WHERE class_key = 1234
-     * $query->filterByClassKey(array(12, 34)); // WHERE class_key IN (12, 34)
-     * $query->filterByClassKey(array('min' => 12)); // WHERE class_key >= 12
-     * $query->filterByClassKey(array('max' => 12)); // WHERE class_key <= 12
-     * </code>
-     *
-     * @param     mixed $classKey The value to use as filter.
-     *              Use scalar values for equality.
-     *              Use array values for in_array() equivalent.
-     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
-     *
-     * @return WidgetQuery The current query, for fluid interface
-     */
-    public function filterByClassKey($classKey = null, $comparison = null)
-    {
-        if (is_array($classKey)) {
-            $useMinMax = false;
-            if (isset($classKey['min'])) {
-                $this->addUsingAlias(WidgetPeer::CLASS_KEY, $classKey['min'], Criteria::GREATER_EQUAL);
-                $useMinMax = true;
-            }
-            if (isset($classKey['max'])) {
-                $this->addUsingAlias(WidgetPeer::CLASS_KEY, $classKey['max'], Criteria::LESS_EQUAL);
-                $useMinMax = true;
-            }
-            if ($useMinMax) {
-                return $this;
-            }
-            if (null === $comparison) {
-                $comparison = Criteria::IN;
-            }
-        }
-
-        return $this->addUsingAlias(WidgetPeer::CLASS_KEY, $classKey, $comparison);
+        return $this
+            ->joinTemplateWidget($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'TemplateWidget', 'TemplateWidgetQuery');
     }
 
     /**
@@ -494,7 +332,7 @@ abstract class BaseWidgetQuery extends ModelCriteria
     public function prune($widget = null)
     {
         if ($widget) {
-            $this->addUsingAlias(WidgetPeer::ID, $widget->getId(), Criteria::NOT_EQUAL);
+            $this->addUsingAlias(WidgetPeer::NAME, $widget->getName(), Criteria::NOT_EQUAL);
         }
 
         return $this;

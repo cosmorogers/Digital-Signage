@@ -24,7 +24,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     protected static $peer;
 
     /**
-     * The flag var to prevent infinit loop in deep copy
+     * The flag var to prevent infinite loop in deep copy
      * @var       boolean
      */
     protected $startCopy = false;
@@ -115,6 +115,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
      */
     public function getId()
     {
+
         return $this->id;
     }
 
@@ -125,6 +126,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
      */
     public function getName()
     {
+
         return $this->name;
     }
 
@@ -135,6 +137,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
      */
     public function getWidth()
     {
+
         return $this->width;
     }
 
@@ -145,6 +148,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
      */
     public function getHeight()
     {
+
         return $this->height;
     }
 
@@ -155,6 +159,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
      */
     public function getDelay()
     {
+
         return $this->delay;
     }
 
@@ -180,7 +185,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     /**
      * Set the value of [id] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Slideshow The current object (for fluent API support)
      */
     public function setId($v)
@@ -201,12 +206,12 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     /**
      * Set the value of [name] column.
      *
-     * @param string $v new value
+     * @param  string $v new value
      * @return Slideshow The current object (for fluent API support)
      */
     public function setName($v)
     {
-        if ($v !== null && is_numeric($v)) {
+        if ($v !== null) {
             $v = (string) $v;
         }
 
@@ -222,7 +227,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     /**
      * Set the value of [width] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Slideshow The current object (for fluent API support)
      */
     public function setWidth($v)
@@ -243,7 +248,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     /**
      * Set the value of [height] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Slideshow The current object (for fluent API support)
      */
     public function setHeight($v)
@@ -264,7 +269,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     /**
      * Set the value of [delay] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Slideshow The current object (for fluent API support)
      */
     public function setDelay($v)
@@ -285,7 +290,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     /**
      * Set the value of [effect] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Slideshow The current object (for fluent API support)
      * @throws PropelException - if the value is not accepted by this enum.
      */
@@ -331,7 +336,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
      * more tables.
      *
      * @param array $row The row returned by PDOStatement->fetch(PDO::FETCH_NUM)
-     * @param int $startcol 0-based offset column which indicates which restultset column to start with.
+     * @param int $startcol 0-based offset column which indicates which resultset column to start with.
      * @param boolean $rehydrate Whether this object is being re-hydrated from the database.
      * @return int             next starting column
      * @throws PropelException - Any caught Exception will be rewrapped as a PropelException.
@@ -354,6 +359,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
                 $this->ensureConsistency();
             }
             $this->postHydrate($row, $startcol, $rehydrate);
+
             return $startcol + 6; // 6 = SlideshowPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
@@ -571,7 +577,6 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
 
             if ($this->slideshowImagesScheduledForDeletion !== null) {
                 if (!$this->slideshowImagesScheduledForDeletion->isEmpty()) {
-                    //the foreign key is flagged as `CASCADE`, so we delete the items
                     SlideshowImageQuery::create()
                         ->filterByPrimaryKeys($this->slideshowImagesScheduledForDeletion->getPrimaryKeys(false))
                         ->delete($con);
@@ -740,10 +745,10 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
      *
      * In addition to checking the current object, all related objects will
      * also be validated.  If all pass then <code>true</code> is returned; otherwise
-     * an aggreagated array of ValidationFailed objects will be returned.
+     * an aggregated array of ValidationFailed objects will be returned.
      *
      * @param array $columns Array of column names to validate.
-     * @return mixed <code>true</code> if all validations pass; array of <code>ValidationFailed</code> objets otherwise.
+     * @return mixed <code>true</code> if all validations pass; array of <code>ValidationFailed</code> objects otherwise.
      */
     protected function doValidate($columns = null)
     {
@@ -856,6 +861,11 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
             $keys[4] => $this->getDelay(),
             $keys[5] => $this->getEffect(),
         );
+        $virtualColumns = $this->virtualColumns;
+        foreach ($virtualColumns as $key => $virtualColumn) {
+            $result[$key] = $virtualColumn;
+        }
+
         if ($includeForeignObjects) {
             if (null !== $this->collSlideshowImages) {
                 $result['SlideshowImages'] = $this->collSlideshowImages->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
@@ -1188,7 +1198,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
                     if (false !== $this->collSlideshowImagesPartial && count($collSlideshowImages)) {
                       $this->initSlideshowImages(false);
 
-                      foreach($collSlideshowImages as $obj) {
+                      foreach ($collSlideshowImages as $obj) {
                         if (false == $this->collSlideshowImages->contains($obj)) {
                           $this->collSlideshowImages->append($obj);
                         }
@@ -1198,12 +1208,13 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
                     }
 
                     $collSlideshowImages->getInternalIterator()->rewind();
+
                     return $collSlideshowImages;
                 }
 
-                if($partial && $this->collSlideshowImages) {
-                    foreach($this->collSlideshowImages as $obj) {
-                        if($obj->isNew()) {
+                if ($partial && $this->collSlideshowImages) {
+                    foreach ($this->collSlideshowImages as $obj) {
+                        if ($obj->isNew()) {
                             $collSlideshowImages[] = $obj;
                         }
                     }
@@ -1269,7 +1280,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
                 return 0;
             }
 
-            if($partial && !$criteria) {
+            if ($partial && !$criteria) {
                 return count($this->getSlideshowImages());
             }
             $query = SlideshowImageQuery::create(null, $criteria);
@@ -1298,8 +1309,13 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
             $this->initSlideshowImages();
             $this->collSlideshowImagesPartial = true;
         }
+
         if (!in_array($l, $this->collSlideshowImages->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
             $this->doAddSlideshowImage($l);
+
+            if ($this->slideshowImagesScheduledForDeletion and $this->slideshowImagesScheduledForDeletion->contains($l)) {
+                $this->slideshowImagesScheduledForDeletion->remove($this->slideshowImagesScheduledForDeletion->search($l));
+            }
         }
 
         return $this;
@@ -1438,7 +1454,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     public function setImages(PropelCollection $images, PropelPDO $con = null)
     {
         $this->clearImages();
-        $currentImages = $this->getImages();
+        $currentImages = $this->getImages(null, $con);
 
         $this->imagesScheduledForDeletion = $currentImages->diff($images);
 
@@ -1495,10 +1511,14 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
         if ($this->collImages === null) {
             $this->initImages();
         }
+
         if (!$this->collImages->contains($image)) { // only add it if the **same** object is not already associated
             $this->doAddImage($image);
+            $this->collImages[] = $image;
 
-            $this->collImages[]= $image;
+            if ($this->imagesScheduledForDeletion and $this->imagesScheduledForDeletion->contains($image)) {
+                $this->imagesScheduledForDeletion->remove($this->imagesScheduledForDeletion->search($image));
+            }
         }
 
         return $this;
@@ -1507,11 +1527,17 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
     /**
      * @param	Image $image The image object to add.
      */
-    protected function doAddImage($image)
+    protected function doAddImage(Image $image)
     {
-        $slideshowImage = new SlideshowImage();
-        $slideshowImage->setImage($image);
-        $this->addSlideshowImage($slideshowImage);
+        // set the back reference to this object directly as using provided method either results
+        // in endless loop or in multiple relations
+        if (!$image->getSlideshows()->contains($this)) { $slideshowImage = new SlideshowImage();
+            $slideshowImage->setImage($image);
+            $this->addSlideshowImage($slideshowImage);
+
+            $foreignCollection = $image->getSlideshows();
+            $foreignCollection[] = $this;
+        }
     }
 
     /**
@@ -1560,7 +1586,7 @@ abstract class BaseSlideshow extends BaseObject implements Persistent
      *
      * This method is a user-space workaround for PHP's inability to garbage collect
      * objects with circular references (even in PHP 5.3). This is currently necessary
-     * when using Propel in certain daemon or large-volumne/high-memory operations.
+     * when using Propel in certain daemon or large-volume/high-memory operations.
      *
      * @param boolean $deep Whether to also clear the references on all referrer objects.
      */

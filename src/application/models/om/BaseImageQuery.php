@@ -55,8 +55,14 @@ abstract class BaseImageQuery extends ModelCriteria
      * @param     string $modelName The phpName of a model, e.g. 'Book'
      * @param     string $modelAlias The alias for the model in this query, e.g. 'b'
      */
-    public function __construct($dbName = 'signage', $modelName = 'Image', $modelAlias = null)
+    public function __construct($dbName = null, $modelName = null, $modelAlias = null)
     {
+        if (null === $dbName) {
+            $dbName = 'signage';
+        }
+        if (null === $modelName) {
+            $modelName = 'Image';
+        }
         parent::__construct($dbName, $modelName, $modelAlias);
     }
 
@@ -73,10 +79,8 @@ abstract class BaseImageQuery extends ModelCriteria
         if ($criteria instanceof ImageQuery) {
             return $criteria;
         }
-        $query = new ImageQuery();
-        if (null !== $modelAlias) {
-            $query->setModelAlias($modelAlias);
-        }
+        $query = new ImageQuery(null, null, $modelAlias);
+
         if ($criteria instanceof Criteria) {
             $query->mergeWith($criteria);
         }
@@ -104,7 +108,7 @@ abstract class BaseImageQuery extends ModelCriteria
             return null;
         }
         if ((null !== ($obj = ImagePeer::getInstanceFromPool((string) $key))) && !$this->formatter) {
-            // the object is alredy in the instance pool
+            // the object is already in the instance pool
             return $obj;
         }
         if ($con === null) {
@@ -342,7 +346,7 @@ abstract class BaseImageQuery extends ModelCriteria
      * <code>
      * $query->filterByDate('2011-03-14'); // WHERE date = '2011-03-14'
      * $query->filterByDate('now'); // WHERE date = '2011-03-14'
-     * $query->filterByDate(array('max' => 'yesterday')); // WHERE date > '2011-03-13'
+     * $query->filterByDate(array('max' => 'yesterday')); // WHERE date < '2011-03-13'
      * </code>
      *
      * @param     mixed $date The value to use as filter.

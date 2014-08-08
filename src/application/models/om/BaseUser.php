@@ -24,7 +24,7 @@ abstract class BaseUser extends BaseObject implements Persistent
     protected static $peer;
 
     /**
-     * The flag var to prevent infinit loop in deep copy
+     * The flag var to prevent infinite loop in deep copy
      * @var       boolean
      */
     protected $startCopy = false;
@@ -110,6 +110,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function getId()
     {
+
         return $this->id;
     }
 
@@ -120,6 +121,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function getUsername()
     {
+
         return $this->username;
     }
 
@@ -130,6 +132,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function getUseAd()
     {
+
         return $this->use_ad;
     }
 
@@ -140,6 +143,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function getPassword()
     {
+
         return $this->password;
     }
 
@@ -150,13 +154,14 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function getName()
     {
+
         return $this->name;
     }
 
     /**
      * Set the value of [id] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return User The current object (for fluent API support)
      */
     public function setId($v)
@@ -177,12 +182,12 @@ abstract class BaseUser extends BaseObject implements Persistent
     /**
      * Set the value of [username] column.
      *
-     * @param string $v new value
+     * @param  string $v new value
      * @return User The current object (for fluent API support)
      */
     public function setUsername($v)
     {
-        if ($v !== null && is_numeric($v)) {
+        if ($v !== null) {
             $v = (string) $v;
         }
 
@@ -227,12 +232,12 @@ abstract class BaseUser extends BaseObject implements Persistent
     /**
      * Set the value of [password] column.
      *
-     * @param string $v new value
+     * @param  string $v new value
      * @return User The current object (for fluent API support)
      */
     public function setPassword($v)
     {
-        if ($v !== null && is_numeric($v)) {
+        if ($v !== null) {
             $v = (string) $v;
         }
 
@@ -248,12 +253,12 @@ abstract class BaseUser extends BaseObject implements Persistent
     /**
      * Set the value of [name] column.
      *
-     * @param string $v new value
+     * @param  string $v new value
      * @return User The current object (for fluent API support)
      */
     public function setName($v)
     {
-        if ($v !== null && is_numeric($v)) {
+        if ($v !== null) {
             $v = (string) $v;
         }
 
@@ -289,7 +294,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      * more tables.
      *
      * @param array $row The row returned by PDOStatement->fetch(PDO::FETCH_NUM)
-     * @param int $startcol 0-based offset column which indicates which restultset column to start with.
+     * @param int $startcol 0-based offset column which indicates which resultset column to start with.
      * @param boolean $rehydrate Whether this object is being re-hydrated from the database.
      * @return int             next starting column
      * @throws PropelException - Any caught Exception will be rewrapped as a PropelException.
@@ -311,6 +316,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 $this->ensureConsistency();
             }
             $this->postHydrate($row, $startcol, $rehydrate);
+
             return $startcol + 5; // 5 = UserPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
@@ -503,10 +509,9 @@ abstract class BaseUser extends BaseObject implements Persistent
 
             if ($this->messagesScheduledForDeletion !== null) {
                 if (!$this->messagesScheduledForDeletion->isEmpty()) {
-                    foreach ($this->messagesScheduledForDeletion as $message) {
-                        // need to save related object because we set the relation to null
-                        $message->save($con);
-                    }
+                    MessageQuery::create()
+                        ->filterByPrimaryKeys($this->messagesScheduledForDeletion->getPrimaryKeys(false))
+                        ->delete($con);
                     $this->messagesScheduledForDeletion = null;
                 }
             }
@@ -521,7 +526,6 @@ abstract class BaseUser extends BaseObject implements Persistent
 
             if ($this->imagesScheduledForDeletion !== null) {
                 if (!$this->imagesScheduledForDeletion->isEmpty()) {
-                    //the foreign key is flagged as `CASCADE`, so we delete the items
                     ImageQuery::create()
                         ->filterByPrimaryKeys($this->imagesScheduledForDeletion->getPrimaryKeys(false))
                         ->delete($con);
@@ -684,10 +688,10 @@ abstract class BaseUser extends BaseObject implements Persistent
      *
      * In addition to checking the current object, all related objects will
      * also be validated.  If all pass then <code>true</code> is returned; otherwise
-     * an aggreagated array of ValidationFailed objects will be returned.
+     * an aggregated array of ValidationFailed objects will be returned.
      *
      * @param array $columns Array of column names to validate.
-     * @return mixed <code>true</code> if all validations pass; array of <code>ValidationFailed</code> objets otherwise.
+     * @return mixed <code>true</code> if all validations pass; array of <code>ValidationFailed</code> objects otherwise.
      */
     protected function doValidate($columns = null)
     {
@@ -804,6 +808,11 @@ abstract class BaseUser extends BaseObject implements Persistent
             $keys[3] => $this->getPassword(),
             $keys[4] => $this->getName(),
         );
+        $virtualColumns = $this->virtualColumns;
+        foreach ($virtualColumns as $key => $virtualColumn) {
+            $result[$key] = $virtualColumn;
+        }
+
         if ($includeForeignObjects) {
             if (null !== $this->collMessages) {
                 $result['Messages'] = $this->collMessages->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
@@ -1138,7 +1147,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                     if (false !== $this->collMessagesPartial && count($collMessages)) {
                       $this->initMessages(false);
 
-                      foreach($collMessages as $obj) {
+                      foreach ($collMessages as $obj) {
                         if (false == $this->collMessages->contains($obj)) {
                           $this->collMessages->append($obj);
                         }
@@ -1148,12 +1157,13 @@ abstract class BaseUser extends BaseObject implements Persistent
                     }
 
                     $collMessages->getInternalIterator()->rewind();
+
                     return $collMessages;
                 }
 
-                if($partial && $this->collMessages) {
-                    foreach($this->collMessages as $obj) {
-                        if($obj->isNew()) {
+                if ($partial && $this->collMessages) {
+                    foreach ($this->collMessages as $obj) {
+                        if ($obj->isNew()) {
                             $collMessages[] = $obj;
                         }
                     }
@@ -1216,7 +1226,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 return 0;
             }
 
-            if($partial && !$criteria) {
+            if ($partial && !$criteria) {
                 return count($this->getMessages());
             }
             $query = MessageQuery::create(null, $criteria);
@@ -1245,8 +1255,13 @@ abstract class BaseUser extends BaseObject implements Persistent
             $this->initMessages();
             $this->collMessagesPartial = true;
         }
+
         if (!in_array($l, $this->collMessages->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
             $this->doAddMessage($l);
+
+            if ($this->messagesScheduledForDeletion and $this->messagesScheduledForDeletion->contains($l)) {
+                $this->messagesScheduledForDeletion->remove($this->messagesScheduledForDeletion->search($l));
+            }
         }
 
         return $this;
@@ -1357,7 +1372,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                     if (false !== $this->collImagesPartial && count($collImages)) {
                       $this->initImages(false);
 
-                      foreach($collImages as $obj) {
+                      foreach ($collImages as $obj) {
                         if (false == $this->collImages->contains($obj)) {
                           $this->collImages->append($obj);
                         }
@@ -1367,12 +1382,13 @@ abstract class BaseUser extends BaseObject implements Persistent
                     }
 
                     $collImages->getInternalIterator()->rewind();
+
                     return $collImages;
                 }
 
-                if($partial && $this->collImages) {
-                    foreach($this->collImages as $obj) {
-                        if($obj->isNew()) {
+                if ($partial && $this->collImages) {
+                    foreach ($this->collImages as $obj) {
+                        if ($obj->isNew()) {
                             $collImages[] = $obj;
                         }
                     }
@@ -1435,7 +1451,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 return 0;
             }
 
-            if($partial && !$criteria) {
+            if ($partial && !$criteria) {
                 return count($this->getImages());
             }
             $query = ImageQuery::create(null, $criteria);
@@ -1464,8 +1480,13 @@ abstract class BaseUser extends BaseObject implements Persistent
             $this->initImages();
             $this->collImagesPartial = true;
         }
+
         if (!in_array($l, $this->collImages->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
             $this->doAddImage($l);
+
+            if ($this->imagesScheduledForDeletion and $this->imagesScheduledForDeletion->contains($l)) {
+                $this->imagesScheduledForDeletion->remove($this->imagesScheduledForDeletion->search($l));
+            }
         }
 
         return $this;
@@ -1523,7 +1544,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      *
      * This method is a user-space workaround for PHP's inability to garbage collect
      * objects with circular references (even in PHP 5.3). This is currently necessary
-     * when using Propel in certain daemon or large-volumne/high-memory operations.
+     * when using Propel in certain daemon or large-volume/high-memory operations.
      *
      * @param boolean $deep Whether to also clear the references on all referrer objects.
      */

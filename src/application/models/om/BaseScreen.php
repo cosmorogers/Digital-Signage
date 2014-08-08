@@ -24,7 +24,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
     protected static $peer;
 
     /**
-     * The flag var to prevent infinit loop in deep copy
+     * The flag var to prevent infinite loop in deep copy
      * @var       boolean
      */
     protected $startCopy = false;
@@ -127,6 +127,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
      */
     public function getId()
     {
+
         return $this->id;
     }
 
@@ -137,6 +138,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
      */
     public function getName()
     {
+
         return $this->name;
     }
 
@@ -147,6 +149,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
      */
     public function getIp()
     {
+
         return $this->ip;
     }
 
@@ -157,6 +160,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
      */
     public function getKey()
     {
+
         return $this->key;
     }
 
@@ -167,6 +171,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
      */
     public function getWidth()
     {
+
         return $this->width;
     }
 
@@ -177,6 +182,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
      */
     public function getHeight()
     {
+
         return $this->height;
     }
 
@@ -227,13 +233,14 @@ abstract class BaseScreen extends BaseObject implements Persistent
      */
     public function getMac()
     {
+
         return $this->mac;
     }
 
     /**
      * Set the value of [id] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Screen The current object (for fluent API support)
      */
     public function setId($v)
@@ -254,12 +261,12 @@ abstract class BaseScreen extends BaseObject implements Persistent
     /**
      * Set the value of [name] column.
      *
-     * @param string $v new value
+     * @param  string $v new value
      * @return Screen The current object (for fluent API support)
      */
     public function setName($v)
     {
-        if ($v !== null && is_numeric($v)) {
+        if ($v !== null) {
             $v = (string) $v;
         }
 
@@ -275,12 +282,12 @@ abstract class BaseScreen extends BaseObject implements Persistent
     /**
      * Set the value of [ip] column.
      *
-     * @param string $v new value
+     * @param  string $v new value
      * @return Screen The current object (for fluent API support)
      */
     public function setIp($v)
     {
-        if ($v !== null && is_numeric($v)) {
+        if ($v !== null) {
             $v = (string) $v;
         }
 
@@ -296,7 +303,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
     /**
      * Set the value of [key] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Screen The current object (for fluent API support)
      */
     public function setKey($v)
@@ -317,7 +324,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
     /**
      * Set the value of [width] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Screen The current object (for fluent API support)
      */
     public function setWidth($v)
@@ -338,7 +345,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
     /**
      * Set the value of [height] column.
      *
-     * @param int $v new value
+     * @param  int $v new value
      * @return Screen The current object (for fluent API support)
      */
     public function setHeight($v)
@@ -382,12 +389,12 @@ abstract class BaseScreen extends BaseObject implements Persistent
     /**
      * Set the value of [mac] column.
      *
-     * @param string $v new value
+     * @param  string $v new value
      * @return Screen The current object (for fluent API support)
      */
     public function setMac($v)
     {
-        if ($v !== null && is_numeric($v)) {
+        if ($v !== null) {
             $v = (string) $v;
         }
 
@@ -423,7 +430,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
      * more tables.
      *
      * @param array $row The row returned by PDOStatement->fetch(PDO::FETCH_NUM)
-     * @param int $startcol 0-based offset column which indicates which restultset column to start with.
+     * @param int $startcol 0-based offset column which indicates which resultset column to start with.
      * @param boolean $rehydrate Whether this object is being re-hydrated from the database.
      * @return int             next starting column
      * @throws PropelException - Any caught Exception will be rewrapped as a PropelException.
@@ -448,6 +455,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
                 $this->ensureConsistency();
             }
             $this->postHydrate($row, $startcol, $rehydrate);
+
             return $startcol + 8; // 8 = ScreenPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
@@ -665,7 +673,6 @@ abstract class BaseScreen extends BaseObject implements Persistent
 
             if ($this->screenMessagesScheduledForDeletion !== null) {
                 if (!$this->screenMessagesScheduledForDeletion->isEmpty()) {
-                    //the foreign key is flagged as `CASCADE`, so we delete the items
                     ScreenMessageQuery::create()
                         ->filterByPrimaryKeys($this->screenMessagesScheduledForDeletion->getPrimaryKeys(false))
                         ->delete($con);
@@ -846,10 +853,10 @@ abstract class BaseScreen extends BaseObject implements Persistent
      *
      * In addition to checking the current object, all related objects will
      * also be validated.  If all pass then <code>true</code> is returned; otherwise
-     * an aggreagated array of ValidationFailed objects will be returned.
+     * an aggregated array of ValidationFailed objects will be returned.
      *
      * @param array $columns Array of column names to validate.
-     * @return mixed <code>true</code> if all validations pass; array of <code>ValidationFailed</code> objets otherwise.
+     * @return mixed <code>true</code> if all validations pass; array of <code>ValidationFailed</code> objects otherwise.
      */
     protected function doValidate($columns = null)
     {
@@ -970,6 +977,11 @@ abstract class BaseScreen extends BaseObject implements Persistent
             $keys[6] => $this->getLastSeen(),
             $keys[7] => $this->getMac(),
         );
+        $virtualColumns = $this->virtualColumns;
+        foreach ($virtualColumns as $key => $virtualColumn) {
+            $result[$key] = $virtualColumn;
+        }
+
         if ($includeForeignObjects) {
             if (null !== $this->collScreenMessages) {
                 $result['ScreenMessages'] = $this->collScreenMessages->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
@@ -1310,7 +1322,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
                     if (false !== $this->collScreenMessagesPartial && count($collScreenMessages)) {
                       $this->initScreenMessages(false);
 
-                      foreach($collScreenMessages as $obj) {
+                      foreach ($collScreenMessages as $obj) {
                         if (false == $this->collScreenMessages->contains($obj)) {
                           $this->collScreenMessages->append($obj);
                         }
@@ -1320,12 +1332,13 @@ abstract class BaseScreen extends BaseObject implements Persistent
                     }
 
                     $collScreenMessages->getInternalIterator()->rewind();
+
                     return $collScreenMessages;
                 }
 
-                if($partial && $this->collScreenMessages) {
-                    foreach($this->collScreenMessages as $obj) {
-                        if($obj->isNew()) {
+                if ($partial && $this->collScreenMessages) {
+                    foreach ($this->collScreenMessages as $obj) {
+                        if ($obj->isNew()) {
                             $collScreenMessages[] = $obj;
                         }
                     }
@@ -1391,7 +1404,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
                 return 0;
             }
 
-            if($partial && !$criteria) {
+            if ($partial && !$criteria) {
                 return count($this->getScreenMessages());
             }
             $query = ScreenMessageQuery::create(null, $criteria);
@@ -1420,8 +1433,13 @@ abstract class BaseScreen extends BaseObject implements Persistent
             $this->initScreenMessages();
             $this->collScreenMessagesPartial = true;
         }
+
         if (!in_array($l, $this->collScreenMessages->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
             $this->doAddScreenMessage($l);
+
+            if ($this->screenMessagesScheduledForDeletion and $this->screenMessagesScheduledForDeletion->contains($l)) {
+                $this->screenMessagesScheduledForDeletion->remove($this->screenMessagesScheduledForDeletion->search($l));
+            }
         }
 
         return $this;
@@ -1560,7 +1578,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
     public function setMessages(PropelCollection $messages, PropelPDO $con = null)
     {
         $this->clearMessages();
-        $currentMessages = $this->getMessages();
+        $currentMessages = $this->getMessages(null, $con);
 
         $this->messagesScheduledForDeletion = $currentMessages->diff($messages);
 
@@ -1617,10 +1635,14 @@ abstract class BaseScreen extends BaseObject implements Persistent
         if ($this->collMessages === null) {
             $this->initMessages();
         }
+
         if (!$this->collMessages->contains($message)) { // only add it if the **same** object is not already associated
             $this->doAddMessage($message);
+            $this->collMessages[] = $message;
 
-            $this->collMessages[]= $message;
+            if ($this->messagesScheduledForDeletion and $this->messagesScheduledForDeletion->contains($message)) {
+                $this->messagesScheduledForDeletion->remove($this->messagesScheduledForDeletion->search($message));
+            }
         }
 
         return $this;
@@ -1629,11 +1651,17 @@ abstract class BaseScreen extends BaseObject implements Persistent
     /**
      * @param	Message $message The message object to add.
      */
-    protected function doAddMessage($message)
+    protected function doAddMessage(Message $message)
     {
-        $screenMessage = new ScreenMessage();
-        $screenMessage->setMessage($message);
-        $this->addScreenMessage($screenMessage);
+        // set the back reference to this object directly as using provided method either results
+        // in endless loop or in multiple relations
+        if (!$message->getScreens()->contains($this)) { $screenMessage = new ScreenMessage();
+            $screenMessage->setMessage($message);
+            $this->addScreenMessage($screenMessage);
+
+            $foreignCollection = $message->getScreens();
+            $foreignCollection[] = $this;
+        }
     }
 
     /**
@@ -1684,7 +1712,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
      *
      * This method is a user-space workaround for PHP's inability to garbage collect
      * objects with circular references (even in PHP 5.3). This is currently necessary
-     * when using Propel in certain daemon or large-volumne/high-memory operations.
+     * when using Propel in certain daemon or large-volume/high-memory operations.
      *
      * @param boolean $deep Whether to also clear the references on all referrer objects.
      */

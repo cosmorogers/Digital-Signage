@@ -48,8 +48,14 @@ abstract class BaseSlideshowImageQuery extends ModelCriteria
      * @param     string $modelName The phpName of a model, e.g. 'Book'
      * @param     string $modelAlias The alias for the model in this query, e.g. 'b'
      */
-    public function __construct($dbName = 'signage', $modelName = 'SlideshowImage', $modelAlias = null)
+    public function __construct($dbName = null, $modelName = null, $modelAlias = null)
     {
+        if (null === $dbName) {
+            $dbName = 'signage';
+        }
+        if (null === $modelName) {
+            $modelName = 'SlideshowImage';
+        }
         parent::__construct($dbName, $modelName, $modelAlias);
     }
 
@@ -66,10 +72,8 @@ abstract class BaseSlideshowImageQuery extends ModelCriteria
         if ($criteria instanceof SlideshowImageQuery) {
             return $criteria;
         }
-        $query = new SlideshowImageQuery();
-        if (null !== $modelAlias) {
-            $query->setModelAlias($modelAlias);
-        }
+        $query = new SlideshowImageQuery(null, null, $modelAlias);
+
         if ($criteria instanceof Criteria) {
             $query->mergeWith($criteria);
         }
@@ -98,7 +102,7 @@ abstract class BaseSlideshowImageQuery extends ModelCriteria
             return null;
         }
         if ((null !== ($obj = SlideshowImagePeer::getInstanceFromPool(serialize(array((string) $key[0], (string) $key[1], (string) $key[2]))))) && !$this->formatter) {
-            // the object is alredy in the instance pool
+            // the object is already in the instance pool
             return $obj;
         }
         if ($con === null) {

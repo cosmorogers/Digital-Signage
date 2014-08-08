@@ -6,11 +6,26 @@ class Templates extends MY_Controller {
 
 	public function index() 
 	{
-		$this->load->view('screens/templates/view');
+        $templates = TemplateQuery::CREATE()->find();
+		$this->load->view('screens/templates/view', array('templates' => $templates));
 	}
 
 	public function create()
 	{
+        $template = new Template();
+        $errors = array();
+        if ($data = $this->input->post('template')) {
+            $template->fromArray($data);
+
+            if ($template->validate()) {
+                $template->save();
+                $this->addSuccessMessage('Template Created');
+                redirect('templates/edit/' . $template->getId());
+            } else {
+                $errors = $template->getValidationFailures();
+            }
+        }
+
 		$layouts = array();
 		
 		foreach(scandir($this->templateBase) as $file) {
@@ -30,12 +45,19 @@ class Templates extends MY_Controller {
 			}
 
 		}
-		$this->load->view('screens/templates/create', array('layouts' => $layouts));
+		$this->load->view('screens/templates/create', array(
+            'layouts' => $layouts,
+            'template' => $template,
+            'errors' => $errors
+        ));
 	}
 
 	public function edit($id)
 	{
 		//Load template
+        $template = TemplateQuery::create()->findOneById($id);
+
+        $widgets = WidgetQuery::create()->find();
 
 		$file = "2-column";
 		$layoutDescription = null;
@@ -46,11 +68,55 @@ class Templates extends MY_Controller {
 		ob_end_clean();
 
 		if (!is_null($layoutDescription) && is_array($layoutDescription)) {
-			$this->load->view('screens/templates/edit', array('layout' => $layoutDescription));
+            $TemplateWidgets= TemplateWidgetQuery::create()
+                ->findByTemplate($template);
+
+			$this->load->view('screens/templates/edit',
+                array(
+                    'layout' => $layoutDescription,
+                    'template_widgets' => $TemplateWidgets,
+                    'widgets' => $widgets,
+                    'template' => $template
+                )
+            );
 		} else {
 			echo "oh noes";
 		}
-	
 	}
+
+    public function addWidget($templateId)
+    {
+        $template = TemplateQuery::CREATE()->findOneById($templateId);
+        if (!is_null($template) && $data = $this->input->get('widget')) {
+            $widget = WidgetQuery::CREATE()->findOneByName($data['name']);
+            if (!is_null($widget)) {
+                $templateWidget = new TemplateWidget();
+                $templateWidget->setTemplate($template)
+                    ->setWidget($widget)
+                    ->setContainer($data['container'])
+                    ->save();
+
+                return $widget->getClass()->getForm();
+            }
+        }
+    }
+
+    public function updateWidget($widgetId)
+    {
+        $templateWidget = TemplateWidgetQuery::CREATE()->findOneById($widgetId);
+        if (!is_null($templateWidget)) {
+            $templateWidget->getWidget()->getClass()->update($this->input->get('settings'));
+        }
+    }
+
+
+    public function removeWidget($widgetId)
+    {
+        $templateWidget = TemplateWidgetQuery::CREATE()->findOneById($widgetId);
+        if (!is_null($templateWidget)) {
+            $templateWidget->delete();
+        }
+    }
+
 
 }

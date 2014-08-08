@@ -24,13 +24,13 @@ abstract class BaseTemplatePeer
     const TM_CLASS = 'TemplateTableMap';
 
     /** The total number of columns. */
-    const NUM_COLUMNS = 4;
+    const NUM_COLUMNS = 3;
 
     /** The number of lazy-loaded columns. */
     const NUM_LAZY_LOAD_COLUMNS = 0;
 
     /** The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS) */
-    const NUM_HYDRATE_COLUMNS = 4;
+    const NUM_HYDRATE_COLUMNS = 3;
 
     /** the column name for the id field */
     const ID = 'template.id';
@@ -38,17 +38,14 @@ abstract class BaseTemplatePeer
     /** the column name for the name field */
     const NAME = 'template.name';
 
-    /** the column name for the width field */
-    const WIDTH = 'template.width';
-
-    /** the column name for the height field */
-    const HEIGHT = 'template.height';
+    /** the column name for the layout field */
+    const LAYOUT = 'template.layout';
 
     /** The default string format for model objects of the related table **/
     const DEFAULT_STRING_FORMAT = 'YAML';
 
     /**
-     * An identiy map to hold any loaded instances of Template objects.
+     * An identity map to hold any loaded instances of Template objects.
      * This must be public so that other peer classes can access this when hydrating from JOIN
      * queries.
      * @var        array Template[]
@@ -63,12 +60,12 @@ abstract class BaseTemplatePeer
      * e.g. TemplatePeer::$fieldNames[TemplatePeer::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        BasePeer::TYPE_PHPNAME => array ('Id', 'Name', 'Width', 'Height', ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'name', 'width', 'height', ),
-        BasePeer::TYPE_COLNAME => array (TemplatePeer::ID, TemplatePeer::NAME, TemplatePeer::WIDTH, TemplatePeer::HEIGHT, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'NAME', 'WIDTH', 'HEIGHT', ),
-        BasePeer::TYPE_FIELDNAME => array ('id', 'name', 'width', 'height', ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, )
+        BasePeer::TYPE_PHPNAME => array ('Id', 'Name', 'Layout', ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'name', 'layout', ),
+        BasePeer::TYPE_COLNAME => array (TemplatePeer::ID, TemplatePeer::NAME, TemplatePeer::LAYOUT, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'NAME', 'LAYOUT', ),
+        BasePeer::TYPE_FIELDNAME => array ('id', 'name', 'layout', ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, )
     );
 
     /**
@@ -78,12 +75,12 @@ abstract class BaseTemplatePeer
      * e.g. TemplatePeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Name' => 1, 'Width' => 2, 'Height' => 3, ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'name' => 1, 'width' => 2, 'height' => 3, ),
-        BasePeer::TYPE_COLNAME => array (TemplatePeer::ID => 0, TemplatePeer::NAME => 1, TemplatePeer::WIDTH => 2, TemplatePeer::HEIGHT => 3, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'NAME' => 1, 'WIDTH' => 2, 'HEIGHT' => 3, ),
-        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'name' => 1, 'width' => 2, 'height' => 3, ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, )
+        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Name' => 1, 'Layout' => 2, ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'name' => 1, 'layout' => 2, ),
+        BasePeer::TYPE_COLNAME => array (TemplatePeer::ID => 0, TemplatePeer::NAME => 1, TemplatePeer::LAYOUT => 2, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'NAME' => 1, 'LAYOUT' => 2, ),
+        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'name' => 1, 'layout' => 2, ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, )
     );
 
     /**
@@ -159,13 +156,11 @@ abstract class BaseTemplatePeer
         if (null === $alias) {
             $criteria->addSelectColumn(TemplatePeer::ID);
             $criteria->addSelectColumn(TemplatePeer::NAME);
-            $criteria->addSelectColumn(TemplatePeer::WIDTH);
-            $criteria->addSelectColumn(TemplatePeer::HEIGHT);
+            $criteria->addSelectColumn(TemplatePeer::LAYOUT);
         } else {
             $criteria->addSelectColumn($alias . '.id');
             $criteria->addSelectColumn($alias . '.name');
-            $criteria->addSelectColumn($alias . '.width');
-            $criteria->addSelectColumn($alias . '.height');
+            $criteria->addSelectColumn($alias . '.layout');
         }
     }
 
@@ -218,7 +213,7 @@ abstract class BaseTemplatePeer
      *
      * @param      Criteria $criteria object used to create the SELECT statement.
      * @param      PropelPDO $con
-     * @return                 Template
+     * @return Template
      * @throws PropelException Any exceptions caught during processing will be
      *		 rethrown wrapped into a PropelException.
      */
@@ -285,7 +280,7 @@ abstract class BaseTemplatePeer
      * to the cache in order to ensure that the same objects are always returned by doSelect*()
      * and retrieveByPK*() calls.
      *
-     * @param      Template $obj A Template object.
+     * @param Template $obj A Template object.
      * @param      string $key (optional) key to use for instance map (for performance boost if key was already calculated externally).
      */
     public static function addInstanceToPool($obj, $key = null)
@@ -335,7 +330,7 @@ abstract class BaseTemplatePeer
      * a multi-column primary key, a serialize()d version of the primary key will be returned.
      *
      * @param      string $key The key (@see getPrimaryKeyHash()) for this instance.
-     * @return   Template Found object or null if 1) no instance exists for specified key or 2) instance pooling has been disabled.
+     * @return Template Found object or null if 1) no instance exists for specified key or 2) instance pooling has been disabled.
      * @see        getPrimaryKeyHash()
      */
     public static function getInstanceFromPool($key)
@@ -356,10 +351,8 @@ abstract class BaseTemplatePeer
      */
     public static function clearInstancePool($and_clear_all_references = false)
     {
-      if ($and_clear_all_references)
-      {
-        foreach (TemplatePeer::$instances as $instance)
-        {
+      if ($and_clear_all_references) {
+        foreach (TemplatePeer::$instances as $instance) {
           $instance->clearAllReferences(true);
         }
       }
@@ -372,6 +365,9 @@ abstract class BaseTemplatePeer
      */
     public static function clearRelatedInstancePool()
     {
+        // Invalidate objects in TemplateWidgetPeer instance pool,
+        // since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
+        TemplateWidgetPeer::clearInstancePool();
     }
 
     /**
@@ -487,7 +483,7 @@ abstract class BaseTemplatePeer
     {
       $dbMap = Propel::getDatabaseMap(BaseTemplatePeer::DATABASE_NAME);
       if (!$dbMap->hasTable(BaseTemplatePeer::TABLE_NAME)) {
-        $dbMap->addTableObject(new TemplateTableMap());
+        $dbMap->addTableObject(new \TemplateTableMap());
       }
     }
 
@@ -537,7 +533,7 @@ abstract class BaseTemplatePeer
             $con->beginTransaction();
             $pk = BasePeer::doInsert($criteria, $con);
             $con->commit();
-        } catch (PropelException $e) {
+        } catch (Exception $e) {
             $con->rollBack();
             throw $e;
         }
@@ -610,7 +606,7 @@ abstract class BaseTemplatePeer
             $con->commit();
 
             return $affectedRows;
-        } catch (PropelException $e) {
+        } catch (Exception $e) {
             $con->rollBack();
             throw $e;
         }
@@ -669,7 +665,7 @@ abstract class BaseTemplatePeer
             $con->commit();
 
             return $affectedRows;
-        } catch (PropelException $e) {
+        } catch (Exception $e) {
             $con->rollBack();
             throw $e;
         }
@@ -682,7 +678,7 @@ abstract class BaseTemplatePeer
      *
      * NOTICE: This does not apply to primary or foreign keys for now.
      *
-     * @param      Template $obj The object to validate.
+     * @param Template $obj The object to validate.
      * @param      mixed $cols Column name or array of column names.
      *
      * @return mixed TRUE if all columns are valid or the error message of the first invalid column.
@@ -707,6 +703,12 @@ abstract class BaseTemplatePeer
             }
         } else {
 
+        if ($obj->isNew() || $obj->isColumnModified(TemplatePeer::NAME))
+            $columns[TemplatePeer::NAME] = $obj->getName();
+
+        if ($obj->isNew() || $obj->isColumnModified(TemplatePeer::LAYOUT))
+            $columns[TemplatePeer::LAYOUT] = $obj->getLayout();
+
         }
 
         return BasePeer::doValidate(TemplatePeer::DATABASE_NAME, TemplatePeer::TABLE_NAME, $columns);
@@ -715,7 +717,7 @@ abstract class BaseTemplatePeer
     /**
      * Retrieve a single object by pkey.
      *
-     * @param      int $pk the primary key.
+     * @param int $pk the primary key.
      * @param      PropelPDO $con the connection to use
      * @return Template
      */

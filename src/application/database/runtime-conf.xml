@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-	<log>
+<!--	<log>
 		<type>file</type>
 		<name>/home/chris/workspace/Signage/propel.log</name>
 		<ident>propel</ident>
 		<level>7</level>
-	</log>
+	</log>-->
  
 	<propel>
 		<datasources default="signage">

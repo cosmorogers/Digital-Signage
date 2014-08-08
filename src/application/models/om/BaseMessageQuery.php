@@ -67,8 +67,14 @@ abstract class BaseMessageQuery extends ModelCriteria
      * @param     string $modelName The phpName of a model, e.g. 'Book'
      * @param     string $modelAlias The alias for the model in this query, e.g. 'b'
      */
-    public function __construct($dbName = 'signage', $modelName = 'Message', $modelAlias = null)
+    public function __construct($dbName = null, $modelName = null, $modelAlias = null)
     {
+        if (null === $dbName) {
+            $dbName = 'signage';
+        }
+        if (null === $modelName) {
+            $modelName = 'Message';
+        }
         parent::__construct($dbName, $modelName, $modelAlias);
     }
 
@@ -85,10 +91,8 @@ abstract class BaseMessageQuery extends ModelCriteria
         if ($criteria instanceof MessageQuery) {
             return $criteria;
         }
-        $query = new MessageQuery();
-        if (null !== $modelAlias) {
-            $query->setModelAlias($modelAlias);
-        }
+        $query = new MessageQuery(null, null, $modelAlias);
+
         if ($criteria instanceof Criteria) {
             $query->mergeWith($criteria);
         }
@@ -116,7 +120,7 @@ abstract class BaseMessageQuery extends ModelCriteria
             return null;
         }
         if ((null !== ($obj = MessagePeer::getInstanceFromPool((string) $key))) && !$this->formatter) {
-            // the object is alredy in the instance pool
+            // the object is already in the instance pool
             return $obj;
         }
         if ($con === null) {
@@ -340,7 +344,7 @@ abstract class BaseMessageQuery extends ModelCriteria
      * <code>
      * $query->filterByCreatedAt('2011-03-14'); // WHERE created_at = '2011-03-14'
      * $query->filterByCreatedAt('now'); // WHERE created_at = '2011-03-14'
-     * $query->filterByCreatedAt(array('max' => 'yesterday')); // WHERE created_at > '2011-03-13'
+     * $query->filterByCreatedAt(array('max' => 'yesterday')); // WHERE created_at < '2011-03-13'
      * </code>
      *
      * @param     mixed $createdAt The value to use as filter.
@@ -470,7 +474,7 @@ abstract class BaseMessageQuery extends ModelCriteria
      * <code>
      * $query->filterByStart('2011-03-14'); // WHERE start = '2011-03-14'
      * $query->filterByStart('now'); // WHERE start = '2011-03-14'
-     * $query->filterByStart(array('max' => 'yesterday')); // WHERE start > '2011-03-13'
+     * $query->filterByStart(array('max' => 'yesterday')); // WHERE start < '2011-03-13'
      * </code>
      *
      * @param     mixed $start The value to use as filter.
@@ -513,7 +517,7 @@ abstract class BaseMessageQuery extends ModelCriteria
      * <code>
      * $query->filterByEnd('2011-03-14'); // WHERE end = '2011-03-14'
      * $query->filterByEnd('now'); // WHERE end = '2011-03-14'
-     * $query->filterByEnd(array('max' => 'yesterday')); // WHERE end > '2011-03-13'
+     * $query->filterByEnd(array('max' => 'yesterday')); // WHERE end < '2011-03-13'
      * </code>
      *
      * @param     mixed $end The value to use as filter.

@@ -35,8 +35,14 @@ abstract class BaseQuoteQuery extends ModelCriteria
      * @param     string $modelName The phpName of a model, e.g. 'Book'
      * @param     string $modelAlias The alias for the model in this query, e.g. 'b'
      */
-    public function __construct($dbName = 'signage', $modelName = 'Quote', $modelAlias = null)
+    public function __construct($dbName = null, $modelName = null, $modelAlias = null)
     {
+        if (null === $dbName) {
+            $dbName = 'signage';
+        }
+        if (null === $modelName) {
+            $modelName = 'Quote';
+        }
         parent::__construct($dbName, $modelName, $modelAlias);
     }
 
@@ -53,10 +59,8 @@ abstract class BaseQuoteQuery extends ModelCriteria
         if ($criteria instanceof QuoteQuery) {
             return $criteria;
         }
-        $query = new QuoteQuery();
-        if (null !== $modelAlias) {
-            $query->setModelAlias($modelAlias);
-        }
+        $query = new QuoteQuery(null, null, $modelAlias);
+
         if ($criteria instanceof Criteria) {
             $query->mergeWith($criteria);
         }
@@ -84,7 +88,7 @@ abstract class BaseQuoteQuery extends ModelCriteria
             return null;
         }
         if ((null !== ($obj = QuotePeer::getInstanceFromPool((string) $key))) && !$this->formatter) {
-            // the object is alredy in the instance pool
+            // the object is already in the instance pool
             return $obj;
         }
         if ($con === null) {

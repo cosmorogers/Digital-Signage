@@ -25,6 +25,16 @@ $this->view('templates/header', $header);
 		</tr>
 	</thead>
 	<tbody>
+    <?php foreach ($templates as $template): ?>
+        <tr>
+            <td><?php echo $template->getName(); ?></td>
+            <td><?php echo $template->getLayout();?></td>
+            <td></td>
+            <td>
+                <a href="<?php echo site_url('templates/edit/' . $template->getId());?>" class="btn"><i class="icon icon-pencil"></i></a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
 	</tbody>
 </table>
 

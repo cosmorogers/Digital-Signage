@@ -158,18 +158,39 @@
 	<table name="template">
 		<column name="id"			type="INTEGER"		primaryKey="true" autoIncrement="true" />
 		<column name="name"			type="VARCHAR"	size="100"	required="true" />
-		<column name="layout"		type="INTEGER"				required="true" />
+		<column name="layout"		type="VARCHAR"  size="100"	required="true" />
 
+        <validator column="name">
+            <rule name="required" message="Name is required." />
+        </validator>
+        <validator column="layout">
+            <rule name="required" message="A layout is required." />
+        </validator>
 	</table>
+
+    <table name="template_widget">
+        <column name="id"           type="INTEGER" autoIncrement="true" primaryKey="true" />
+        <column name="template_id"  type="INTEGER" />
+        <column name="widget_name"    type="VARCHAR" size="25" />
+        <column name="container"         type="VARCHAR" size="100" />
+        <column name="data"         type="LONGVARCHAR" />
+
+        <foreign-key foreignTable="template" onDelete="cascade">
+            <reference local="template_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="widget">
+            <reference local="widget_name" foreign="name" />
+        </foreign-key>
+    </table>
 	
-	<table name="widget" abstract="true">
-		<column name="id"			type="INTEGER"		primaryKey="true" autoIncrement="true" />
-		<column name="pos_id"		type="VARCHAR"	size="20"	required="true" />
-		<column name="data"			type="LONGVARCHAR"			required="false" />
-		<column name="class_key" type="INTEGER" inheritance="single">
-			<inheritance key="1" class="Widget"/>
-			<inheritance key="2" class="MessageWidget" extends="Widget"/>
-			<inheritance key="3" class="SlideshowWidget" extends="Widget"/>
-		</column>
+	<table name="widget">
+		<column name="name"			type="VARCHAR" size="25"		primaryKey="true"/>
 	</table>
+
+    <table name="temperature">
+        <column name="id" primaryKey="true" autoIncrement="true" type="INTEGER" />
+        <column name="location" type="VARCHAR" size="25" required="true" />
+        <column name="time" type="TIMESTAMP" required="true" />
+        <column name="reading" type="FLOAT" required="true" />
+    </table>
 </database>

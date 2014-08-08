@@ -167,9 +167,33 @@ CREATE TABLE `template`
 (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(100) NOT NULL,
-    `width` INTEGER NOT NULL,
-    `height` INTEGER NOT NULL,
+    `layout` VARCHAR(100) NOT NULL,
     PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- template_widget
+-- ---------------------------------------------------------------------
+
+DROP TABLE IF EXISTS `template_widget`;
+
+CREATE TABLE `template_widget`
+(
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `template_id` INTEGER,
+    `widget_name` VARCHAR(25),
+    `container` VARCHAR(100),
+    `data` TEXT,
+    PRIMARY KEY (`id`),
+    INDEX `template_widget_FI_1` (`template_id`),
+    INDEX `template_widget_FI_2` (`widget_name`),
+    CONSTRAINT `template_widget_FK_1`
+        FOREIGN KEY (`template_id`)
+        REFERENCES `template` (`id`)
+        ON DELETE CASCADE,
+    CONSTRAINT `template_widget_FK_2`
+        FOREIGN KEY (`widget_name`)
+        REFERENCES `widget` (`name`)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
@@ -180,12 +204,22 @@ DROP TABLE IF EXISTS `widget`;
 
 CREATE TABLE `widget`
 (
+    `name` VARCHAR(25) NOT NULL,
+    PRIMARY KEY (`name`)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- temperature
+-- ---------------------------------------------------------------------
+
+DROP TABLE IF EXISTS `temperature`;
+
+CREATE TABLE `temperature`
+(
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `pos_x` INTEGER NOT NULL,
-    `pos_y` INTEGER NOT NULL,
-    `width` INTEGER NOT NULL,
-    `height` INTEGER NOT NULL,
-    `class_key` INTEGER,
+    `location` VARCHAR(25) NOT NULL,
+    `time` DATETIME NOT NULL,
+    `reading` FLOAT NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 

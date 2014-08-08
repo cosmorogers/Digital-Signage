@@ -13,10 +13,18 @@
  *
  * @package    propel.generator.
  */
-abstract class Widget extends BaseWidget
+class Widget extends BaseWidget
 {
-	abstract function getWidgetName();
-	abstract function getWidgetDescription();
-	abstract function getWidgetForm();
+
+    /**
+     * @return AbstractWidget
+     */
+    public function getClass()
+    {
+        require_once 'application/widgets/AbstractWidget.php';
+        $className = ucfirst($this->getName()) . 'Widget';
+        require_once 'application/widgets/'.$className.'.php';
+        return new $className();
+    }
 	
 }

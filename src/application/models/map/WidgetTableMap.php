@@ -36,15 +36,9 @@ class WidgetTableMap extends TableMap
         $this->setPhpName('Widget');
         $this->setClassname('Widget');
         $this->setPackage('');
-        $this->setUseIdGenerator(true);
-        $this->setSingleTableInheritance(true);
+        $this->setUseIdGenerator(false);
         // columns
-        $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
-        $this->addColumn('pos_x', 'PosX', 'INTEGER', true, null, null);
-        $this->addColumn('pos_y', 'PosY', 'INTEGER', true, null, null);
-        $this->addColumn('width', 'Width', 'INTEGER', true, null, null);
-        $this->addColumn('height', 'Height', 'INTEGER', true, null, null);
-        $this->addColumn('class_key', 'ClassKey', 'INTEGER', false, null, null);
+        $this->addPrimaryKey('name', 'Name', 'VARCHAR', true, 25, null);
         // validators
     } // initialize()
 
@@ -53,6 +47,7 @@ class WidgetTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('TemplateWidget', 'TemplateWidget', RelationMap::ONE_TO_MANY, array('name' => 'widget_name', ), null, null, 'TemplateWidgets');
     } // buildRelations()
 
 } // WidgetTableMap
