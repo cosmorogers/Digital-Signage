@@ -22,27 +22,28 @@ class ModelCriterion extends Criterion
     /**
      * Create a new instance.
      *
-     * @param Criteria  $parent      The outer class (this is an "inner" class).
+     * @param Criteria  $outer       The outer class (this is an "inner" class).
      * @param ColumnMap $column      A Column object to help escaping the value
      * @param mixed     $value
      * @param string    $comparison, among ModelCriteria::MODEL_CLAUSE
      * @param string    $clause      A simple pseudo-SQL clause, e.g. 'foo.BAR LIKE ?'
+     * @param string    $type
      */
-    public function __construct(Criteria $outer, $column, $value = null, $comparison = ModelCriteria::MODEL_CLAUSE, $clause, $type = null)
+    public function __construct(Criteria $outer, $column, $value, $comparison, $clause, $type = null)
     {
         $this->value = $value;
         if ($column instanceof ColumnMap) {
             $this->column = $column->getName();
             $this->table = $column->getTable()->getName();
         } else {
-            $dotPos = strrpos($column,'.');
+            $dotPos = strrpos($column, '.');
             if ($dotPos === false) {
                 // no dot => aliased column
                 $this->table = null;
                 $this->column = $column;
             } else {
                 $this->table = substr($column, 0, $dotPos);
-                $this->column = substr($column, $dotPos+1, strlen($column));
+                $this->column = substr($column, $dotPos + 1, strlen($column));
             }
         }
         $this->comparison = ($comparison === null ? Criteria::EQUAL : $comparison);
@@ -57,15 +58,15 @@ class ModelCriterion extends Criterion
     }
 
     /**
-     * Figure out which MocelCriterion method to use
+     * Figure out which ModelCriterion method to use
      * to build the prepared statement and parameters using to the Criterion comparison
      * and call it to append the prepared statement and the parameters of the current clause.
      * For performance reasons, this method tests the cases of parent::dispatchPsHandling()
      * first, and that is not possible through inheritance ; that's why the parent
      * code is duplicated here.
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      */
     protected function dispatchPsHandling(&$sb, array &$params)
     {
@@ -109,7 +110,6 @@ class ModelCriterion extends Criterion
             default:
                 // table.column = ? or table.column >= ? etc. (traditional expressions, the default)
                 $this->appendBasicToPs($sb, $params);
-
         }
     }
 
@@ -117,14 +117,14 @@ class ModelCriterion extends Criterion
      * Appends a Prepared Statement representation of the ModelCriterion onto the buffer
      * For regular model clauses, e.g. 'book.TITLE = ?'
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      */
     public function appendModelClauseToPs(&$sb, array &$params)
     {
         if ($this->value !== null) {
             $params[] = array('table' => $this->realtable, 'column' => $this->column, 'value' => $this->value);
-            $sb .= str_replace('?', ':p'.count($params), $this->clause);
+            $sb .= str_replace('?', ':p' . count($params), $this->clause);
         } else {
             $sb .= $this->clause;
         }
@@ -135,8 +135,8 @@ class ModelCriterion extends Criterion
      * For LIKE model clauses, e.g. 'book.TITLE LIKE ?'
      * Handles case insensitivity for VARCHAR columns
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      */
     public function appendModelClauseLikeToPs(&$sb, array &$params)
     {
@@ -152,8 +152,8 @@ class ModelCriterion extends Criterion
      * Appends a Prepared Statement representation of the ModelCriterion onto the buffer
      * For ternary model clauses, e.G 'book.ID BETWEEN ? AND ?'
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      *
      * @throws PropelException
      */
@@ -168,7 +168,7 @@ class ModelCriterion extends Criterion
                 throw new PropelException('Null values are not supported inside BETWEEN clauses');
             }
             $params[] = array('table' => $this->realtable, 'column' => $this->column, 'value' => $value);
-            $clause = self::strReplaceOnce('?', ':p'.count($params), $clause);
+            $clause = self::strReplaceOnce('?', ':p' . count($params), $clause);
         }
         $sb .= $clause;
     }
@@ -177,33 +177,33 @@ class ModelCriterion extends Criterion
      * Appends a Prepared Statement representation of the ModelCriterion onto the buffer
      * For IN or NOT IN model clauses, e.g. 'book.TITLE NOT IN ?'
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      */
     public function appendModelClauseArrayToPs(&$sb, array &$params)
     {
         $_bindParams = array(); // the param names used in query building
         $_idxstart = count($params);
         $valuesLength = 0;
-        foreach ( (array) $this->value as $value ) {
+        foreach ((array) $this->value as $value) {
             $valuesLength++; // increment this first to correct for wanting bind params to start with :p1
             $params[] = array('table' => $this->realtable, 'column' => $this->column, 'value' => $value);
-            $_bindParams[] = ':p'.($_idxstart + $valuesLength);
+            $_bindParams[] = ':p' . ($_idxstart + $valuesLength);
         }
         if ($valuesLength !== 0) {
             $sb .= str_replace('?', '(' . implode(',', $_bindParams) . ')', $this->clause);
         } else {
             $sb .= (stripos($this->clause, ' NOT IN ') === false) ? "1<>1" : "1=1";
         }
-        unset ( $value, $valuesLength );
+        unset($value, $valuesLength);
     }
 
     /**
      * Appends a Prepared Statement representation of the Criterion onto the buffer
      * For custom expressions with a typed binding, e.g. 'foobar = ?'
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      *
      * @throws PropelException
      */
@@ -219,6 +219,7 @@ class ModelCriterion extends Criterion
     /**
      * This method checks another Criteria to see if they contain
      * the same attributes and hashtable entries.
+     *
      * @return boolean
      */
     public function equals($obj)
@@ -247,7 +248,7 @@ class ModelCriterion extends Criterion
         $isEquiv &= (count($crit->getClauses()) == $clausesLength);
         $critConjunctions = $crit->getConjunctions();
         $critClauses = $crit->getClauses();
-        for ($i=0; $i < $clausesLength && $isEquiv; $i++) {
+        for ($i = 0; $i < $clausesLength && $isEquiv; $i++) {
             $isEquiv &= ($this->conjunctions[$i] === $critConjunctions[$i]);
             $isEquiv &= ($this->clauses[$i] === $critClauses[$i]);
         }
@@ -275,15 +276,15 @@ class ModelCriterion extends Criterion
         }
 
         foreach ($this->clauses as $clause) {
-            // TODO: i KNOW there is a php incompatibility with the following line
-            // but i dont remember what it is, someone care to look it up and
-            // replace it if it doesnt bother us?
+            // TODO: I KNOW there is a php incompatibility with the following line
+            // but I don't remember what it is, someone care to look it up and
+            // replace it if it doesn't bother us?
             // $clause->appendPsTo($sb='',$params=array());
             $sb = '';
             $params = array();
-            $clause->appendPsTo($sb,$params);
-            $h ^= crc32(serialize(array($sb,$params)));
-            unset ( $sb, $params );
+            $clause->appendPsTo($sb, $params);
+            $h ^= crc32(serialize(array($sb, $params)));
+            unset($sb, $params);
         }
 
         return $h;
@@ -298,10 +299,10 @@ class ModelCriterion extends Criterion
     {
         $firstChar = strpos($subject, $search);
         if ($firstChar !== false) {
-            $beforeStr = substr($subject,0,$firstChar);
+            $beforeStr = substr($subject, 0, $firstChar);
             $afterStr = substr($subject, $firstChar + strlen($search));
 
-            return $beforeStr.$replace.$afterStr;
+            return $beforeStr . $replace . $afterStr;
         } else {
             return $subject;
         }

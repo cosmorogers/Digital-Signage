@@ -68,7 +68,8 @@ class PropelCSVParser extends PropelParser
     /**
      * Accepts a row of data and returns it formatted
      *
-     * @param  array $row An array of data to be formatted for output to the file
+     * @param array $row An array of data to be formatted for output to the file
+     *
      * @return array The formatted array
      */
     protected function formatRow($row)
@@ -102,11 +103,12 @@ class PropelCSVParser extends PropelParser
     }
 
     /**
-    * Escapes a column (escapes quotechar with escapechar)
-    *
-    * @param string $input	A single value to be escaped for output
-    * @return string	Escaped input value
-    */
+     * Escapes a column (escapes quotechar with escapechar)
+     *
+     * @param string $input A single value to be escaped for output
+     *
+     * @return string Escaped input value
+     */
     protected function escape($input)
     {
         return str_replace(
@@ -119,7 +121,8 @@ class PropelCSVParser extends PropelParser
     /**
      * Quotes a column with quotechar
      *
-     * @param  string $input A single value to be quoted for output
+     * @param string $input A single value to be quoted for output
+     *
      * @return string Quoted input value
      */
     protected function quote($input)
@@ -130,7 +133,8 @@ class PropelCSVParser extends PropelParser
     /**
      * Returns true if input contains quotechar, delimiter or any of the characters in lineTerminator
      *
-     * @param  string  $input A single value to be checked for special characters
+     * @param string $input A single value to be checked for special characters
+     *
      * @return boolean True if contains any special characters
      */
     protected function containsSpecialChars($input)
@@ -150,7 +154,8 @@ class PropelCSVParser extends PropelParser
     /**
      * Serializes a value to place it into a CSV output
      *
-     * @param  mixed  $input
+     * @param mixed $input
+     *
      * @return string
      */
     protected function serialize($input)
@@ -195,7 +200,7 @@ class PropelCSVParser extends PropelParser
             foreach ($rows as $row) {
                 $values = $this->cleanupRow($this->getColumns($row));
                 if ($values !== array()) {
-                    $array []= array_combine($keys, $values);
+                    $array[] = array_combine($keys, $values);
                 }
             }
         } else {
@@ -231,6 +236,7 @@ class PropelCSVParser extends PropelParser
      * Accepts a formatted row of data and returns it raw
      *
      * @param array An array of data from a CSV output
+     *
      * @return array The cleaned up array
      */
     protected function cleanupRow($row)
@@ -283,7 +289,8 @@ class PropelCSVParser extends PropelParser
     /**
      * Unserializes a value from CSV output
      *
-     * @param  string $input
+     * @param string $input
+     *
      * @return mixed
      */
     protected function unserialize($input)
@@ -304,5 +311,4 @@ class PropelCSVParser extends PropelParser
     {
         return $this->toArray($data, $isList, $includeHeading);
     }
-
 }

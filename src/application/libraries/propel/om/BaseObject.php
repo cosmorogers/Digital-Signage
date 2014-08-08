@@ -32,12 +32,14 @@ abstract class BaseObject
 
     /**
      * attribute to determine if this object has previously been saved.
+     *
      * @var        boolean
      */
     protected $_new = true;
 
     /**
      * attribute to determine whether this object has been deleted.
+     *
      * @var        boolean
      */
     protected $_deleted = false;
@@ -45,6 +47,7 @@ abstract class BaseObject
     /**
      * The columns that have been modified in current object.
      * Tracking modified columns allows us to only update modified columns.
+     *
      * @var        array
      */
     protected $modifiedColumns = array();
@@ -52,6 +55,7 @@ abstract class BaseObject
     /**
      * The (virtual) columns that are added at runtime
      * The formatters can add supplementary columns based on a resultset
+     *
      * @var        array
      */
     protected $virtualColumns = array();
@@ -76,7 +80,8 @@ abstract class BaseObject
     /**
      * Has specified column been modified?
      *
-     * @param  string  $col column fully qualified name (BasePeer::TYPE_COLNAME), e.g. Book::AUTHOR_ID
+     * @param string $col column fully qualified name (BasePeer::TYPE_COLNAME), e.g. Book::AUTHOR_ID
+     *
      * @return boolean True if $col has been modified.
      */
     public function isColumnModified($col)
@@ -86,6 +91,7 @@ abstract class BaseObject
 
     /**
      * Get the columns that have been modified in this object.
+     *
      * @return array A unique list of the modified column names for this object.
      */
     public function getModifiedColumns()
@@ -109,15 +115,19 @@ abstract class BaseObject
      * Setter for the isNew attribute.  This method will be called
      * by Propel-generated children and Peers.
      *
-     * @param boolean $b the state of the object.
+     * @param  boolean $b the state of the object.
+     * @return self
      */
     public function setNew($b)
     {
         $this->_new = (boolean) $b;
+
+        return $this;
     }
 
     /**
      * Whether this object has been deleted.
+     *
      * @return boolean The deleted state of this object.
      */
     public function isDeleted()
@@ -127,17 +137,23 @@ abstract class BaseObject
 
     /**
      * Specify whether this object has been deleted.
-     * @param  boolean $b The deleted state of this object.
-     * @return void
+     *
+     * @param boolean $b The deleted state of this object.
+     *
+     * @return self
      */
     public function setDeleted($b)
     {
         $this->_deleted = (boolean) $b;
+
+        return $this;
     }
 
     /**
      * Code to be run before persisting the object
-     * @param  PropelPDO $con
+     *
+     * @param PropelPDO $con
+     *
      * @return boolean
      */
     public function preSave(PropelPDO $con = null)
@@ -147,6 +163,7 @@ abstract class BaseObject
 
     /**
      * Code to be run after persisting the object
+     *
      * @param PropelPDO $con
      */
     public function postSave(PropelPDO $con = null)
@@ -155,7 +172,9 @@ abstract class BaseObject
 
     /**
      * Code to be run before inserting to database
-     * @param  PropelPDO $con
+     *
+     * @param PropelPDO $con
+     *
      * @return boolean
      */
     public function preInsert(PropelPDO $con = null)
@@ -165,6 +184,7 @@ abstract class BaseObject
 
     /**
      * Code to be run after inserting to database
+     *
      * @param PropelPDO $con
      */
     public function postInsert(PropelPDO $con = null)
@@ -173,7 +193,9 @@ abstract class BaseObject
 
     /**
      * Code to be run before updating the object in database
-     * @param  PropelPDO $con
+     *
+     * @param PropelPDO $con
+     *
      * @return boolean
      */
     public function preUpdate(PropelPDO $con = null)
@@ -183,6 +205,7 @@ abstract class BaseObject
 
     /**
      * Code to be run after updating the object in database
+     *
      * @param PropelPDO $con
      */
     public function postUpdate(PropelPDO $con = null)
@@ -191,7 +214,9 @@ abstract class BaseObject
 
     /**
      * Code to be run before deleting the object in database
-     * @param  PropelPDO $con
+     *
+     * @param PropelPDO $con
+     *
      * @return boolean
      */
     public function preDelete(PropelPDO $con = null)
@@ -201,6 +226,7 @@ abstract class BaseObject
 
     /**
      * Code to be run after deleting the object in database
+     *
      * @param PropelPDO $con
      */
     public function postDelete(PropelPDO $con = null)
@@ -209,6 +235,7 @@ abstract class BaseObject
 
     /**
      * Code to be run after object hydration
+     *
      * @param PropelPDO $con
      */
     public function postHydrate($row, $startcol = 0, $rehydrate = false)
@@ -217,8 +244,10 @@ abstract class BaseObject
 
     /**
      * Sets the modified state for the object to be false.
-     * @param  string $col If supplied, only the specified column is reset.
-     * @return void
+     *
+     * @param string $col If supplied, only the specified column is reset.
+     *
+     * @return self
      */
     public function resetModified($col = null)
     {
@@ -229,6 +258,8 @@ abstract class BaseObject
         } else {
             $this->modifiedColumns = array();
         }
+
+        return $this;
     }
 
     /**
@@ -237,12 +268,13 @@ abstract class BaseObject
      * <code>equals(BaseObject)</code>.  Otherwise, returns <code>false</code>.
      *
      * @param      obj The object to compare to.
+     *
      * @return Whether equal to the object specified.
      */
     public function equals($obj)
     {
-        $thisclazz = get_class($this);
-        if (is_object($obj) && $obj instanceof $thisclazz) {
+        $thisclass = get_class($this);
+        if (is_object($obj) && $obj instanceof $thisclass) {
             if ($this === $obj) {
                 return true;
             } elseif ($this->getPrimaryKey() === null || $obj->getPrimaryKey() === null) {
@@ -267,7 +299,7 @@ abstract class BaseObject
             return crc32(serialize($this->getPrimaryKey()));
         }
 
-        return crc32(serialize($this));
+        return crc32(serialize(clone $this));
     }
 
     /**
@@ -326,8 +358,9 @@ abstract class BaseObject
     /**
      * Logs a message using Propel::log().
      *
-     * @param  string  $msg
-     * @param  int     $priority One of the Propel::LOG_* logging levels
+     * @param string $msg
+     * @param int    $priority One of the Propel::LOG_* logging levels
+     *
      * @return boolean
      */
     protected function log($msg, $priority = Propel::LOG_INFO)
@@ -365,9 +398,10 @@ abstract class BaseObject
      *  => {"Id":9012,"Title":"Don Juan","ISBN":"0140422161","Price":12.99,"PublisherId":1234,"AuthorId":5678}');
      * </code>
      *
-     * @param  mixed   $parser                 A PropelParser instance, or a format name ('XML', 'YAML', 'JSON', 'CSV')
-     * @param  boolean $includeLazyLoadColumns (optional) Whether to include lazy load(ed) columns. Defaults to TRUE.
-     * @return string  The exported data
+     * @param mixed   $parser                 A PropelParser instance, or a format name ('XML', 'YAML', 'JSON', 'CSV')
+     * @param boolean $includeLazyLoadColumns (optional) Whether to include lazy load(ed) columns. Defaults to TRUE.
+     *
+     * @return string The exported data
      */
     public function exportTo($parser, $includeLazyLoadColumns = true)
     {
@@ -409,8 +443,8 @@ abstract class BaseObject
             if ($this->hasVirtualColumn($virtualColumn)) {
                 return $this->getVirtualColumn($virtualColumn);
             }
-            // no lcfirst in php<5.3...
-            $virtualColumn[0] = strtolower($virtualColumn[0]);
+
+            $virtualColumn = lcfirst($virtualColumn);
             if ($this->hasVirtualColumn($virtualColumn)) {
                 return $this->getVirtualColumn($virtualColumn);
             }

@@ -27,7 +27,8 @@ class Criterion
     protected $value;
 
     /** Comparison value.
-     * @var        SqlEnum
+     *
+     * @var string
      */
     protected $comparison;
 
@@ -42,6 +43,7 @@ class Criterion
 
     /**
      * Binding type to be used for Criteria::RAW comparison
+     *
      * @var string any of the PDO::PARAM_ constant values
      */
     protected $type;
@@ -57,6 +59,8 @@ class Criterion
 
     /**
      * other connected criteria and their conjunctions.
+     *
+     * @var Criterion[]
      */
     protected $clauses = array();
     protected $conjunctions = array();
@@ -91,9 +95,10 @@ class Criterion
     }
 
     /**
-    * Init some properties with the help of outer class
-    * @param      Criteria $criteria The outer class
-    */
+     * Init some properties with the help of outer class
+     *
+     * @param Criteria $criteria The outer class
+     */
     public function init(Criteria $criteria)
     {
         // init $this->db
@@ -109,7 +114,6 @@ class Criterion
         // init $this->realtable
         $realtable = $criteria->getTableForAlias($this->table);
         $this->realtable = $realtable ? $realtable : $this->table;
-
     }
 
     /**
@@ -126,6 +130,7 @@ class Criterion
      * Set the table name.
      *
      * @param string $name A String with the table name.
+     *
      * @return void
      */
     public function setTable($name)
@@ -167,6 +172,7 @@ class Criterion
      * Get the value of db.
      * The DBAdapter which might be used to get db specific
      * variations of sql.
+     *
      * @return DBAdapter value of db.
      */
     public function getDB()
@@ -177,7 +183,9 @@ class Criterion
     /**
      * Set the value of db.
      * The DBAdapter might be used to get db specific variations of sql.
-     * @param  DBAdapter $v Value to assign to db.
+     *
+     * @param DBAdapter $v Value to assign to db.
+     *
      * @return void
      */
     public function setDB(DBAdapter $v)
@@ -191,7 +199,8 @@ class Criterion
     /**
      * Sets ignore case.
      *
-     * @param  boolean   $b True if case should be ignored.
+     * @param boolean $b True if case should be ignored.
+     *
      * @return Criterion A modified Criterion object.
      */
     public function setIgnoreCase($b)
@@ -206,13 +215,14 @@ class Criterion
      *
      * @return boolean True if case is ignored.
      */
-     public function isIgnoreCase()
-     {
-         return $this->ignoreStringCase;
-     }
+    public function isIgnoreCase()
+    {
+        return $this->ignoreStringCase;
+    }
 
     /**
      * Get the list of clauses in this Criterion.
+     *
      * @return array
      */
     private function getClauses()
@@ -222,6 +232,7 @@ class Criterion
 
     /**
      * Get the list of conjunctions in this Criterion
+     *
      * @return array
      */
     public function getConjunctions()
@@ -244,6 +255,7 @@ class Criterion
      * Append an OR Criterion onto this Criterion's list.
      *
      * @param Criterion $criterion
+     *
      * @return Criterion
      */
     public function addOr(Criterion $criterion)
@@ -258,15 +270,16 @@ class Criterion
      * Appends a Prepared Statement representation of the Criterion
      * onto the buffer.
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param  array           $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
+     *
      * @return void
      * @throws PropelException - if the expression builder cannot figure out how to turn a specified
      *                           expression into proper SQL.
      */
     public function appendPsTo(&$sb, array &$params)
     {
-        $sb .= str_repeat ( '(', count($this->clauses) );
+        $sb .= str_repeat('(', count($this->clauses));
 
         $this->dispatchPsHandling($sb, $params);
 
@@ -282,8 +295,8 @@ class Criterion
      * to build the prepared statement and parameters using to the Criterion comparison
      * and call it to append the prepared statement and the parameters of the current clause
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      */
     protected function dispatchPsHandling(&$sb, array &$params)
     {
@@ -318,8 +331,8 @@ class Criterion
      * Appends a Prepared Statement representation of the Criterion onto the buffer
      * For custom expressions with no binding, e.g. 'NOW() = 1'
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      */
     protected function appendCustomToPs(&$sb, array &$params)
     {
@@ -332,8 +345,8 @@ class Criterion
      * Appends a Prepared Statement representation of the Criterion onto the buffer
      * For custom expressions with a typed binding, e.g. 'foobar = ?'
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      *
      * @throws PropelException
      */
@@ -350,8 +363,8 @@ class Criterion
      * Appends a Prepared Statement representation of the Criterion onto the buffer
      * For IN expressions, e.g. table.column IN (?, ?) or table.column NOT IN (?, ?)
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      */
     protected function appendInToPs(&$sb, array &$params)
     {
@@ -376,8 +389,8 @@ class Criterion
      * Appends a Prepared Statement representation of the Criterion onto the buffer
      * For LIKE expressions, e.g. table.column LIKE ? or table.column NOT LIKE ?  (or ILIKE for Postgres)
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      */
     protected function appendLikeToPs(&$sb, array &$params)
     {
@@ -404,9 +417,9 @@ class Criterion
         // If selection is case insensitive use SQL UPPER() function
         // on criteria or, if Postgres we are using ILIKE, so not necessary.
         if ($this->ignoreStringCase && !($db instanceof DBPostgres)) {
-            $sb .= $db->ignoreCase(':p'.count($params));
+            $sb .= $db->ignoreCase(':p' . count($params));
         } else {
-            $sb .= ':p'.count($params);
+            $sb .= ':p' . count($params);
         }
     }
 
@@ -414,8 +427,8 @@ class Criterion
      * Appends a Prepared Statement representation of the Criterion onto the buffer
      * For traditional expressions, e.g. table.column = ? or table.column >= ? etc.
      *
-     * @param      string &$sb The string that will receive the Prepared Statement
-     * @param array $params A list to which Prepared Statement parameters will be appended
+     * @param string &$sb    The string that will receive the Prepared Statement
+     * @param array  $params A list to which Prepared Statement parameters will be appended
      *
      * @throws PropelException
      */
@@ -436,11 +449,10 @@ class Criterion
                 // default case, it is a normal col = value expression; value
                 // will be replaced w/ '?' and will be inserted later using PDO bindValue()
                 if ($this->ignoreStringCase) {
-                    $sb .= $this->getDb()->ignoreCase($field) . $this->comparison . $this->getDb()->ignoreCase(':p'.count($params));
+                    $sb .= $this->getDb()->ignoreCase($field) . $this->comparison . $this->getDb()->ignoreCase(':p' . count($params));
                 } else {
-                    $sb .= $field . $this->comparison . ':p'.count($params);
+                    $sb .= $field . $this->comparison . ':p' . count($params);
                 }
-
             }
         } else {
 
@@ -454,7 +466,6 @@ class Criterion
                 // for now throw an exception, because not sure how to interpret this
                 throw new PropelException("Could not build SQL for expression: $field " . $this->comparison . " NULL");
             }
-
         }
     }
 
@@ -463,6 +474,7 @@ class Criterion
      * the same attributes and hashtable entries.
      *
      * @param Criterion|null $obj
+     *
      * @return boolean
      */
     public function equals($obj)
@@ -490,7 +502,7 @@ class Criterion
         $isEquiv &= (count($crit->getClauses()) == $clausesLength);
         $critConjunctions = $crit->getConjunctions();
         $critClauses = $crit->getClauses();
-        for ($i=0; $i < $clausesLength && $isEquiv; $i++) {
+        for ($i = 0; $i < $clausesLength && $isEquiv; $i++) {
             $isEquiv &= ($this->conjunctions[$i] === $critConjunctions[$i]);
             $isEquiv &= ($this->clauses[$i] === $critClauses[$i]);
         }
@@ -518,15 +530,15 @@ class Criterion
         }
 
         foreach ($this->clauses as $clause) {
-            // TODO: i KNOW there is a php incompatibility with the following line
-            // but i dont remember what it is, someone care to look it up and
-            // replace it if it doesnt bother us?
+            // TODO: I KNOW there is a php incompatibility with the following line
+            // but I don't remember what it is, someone care to look it up and
+            // replace it if it doesn't bother us?
             // $clause->appendPsTo($sb='',$params=array());
             $sb = '';
             $params = array();
-            $clause->appendPsTo($sb,$params);
-            $h ^= crc32(serialize(array($sb,$params)));
-            unset ( $sb, $params );
+            $clause->appendPsTo($sb, $params);
+            $h ^= crc32(serialize(array($sb, $params)));
+            unset ($sb, $params);
         }
 
         return $h;
@@ -534,6 +546,7 @@ class Criterion
 
     /**
      * Get all tables from nested criterion objects
+     *
      * @return array
      */
     public function getAllTables()
@@ -549,13 +562,14 @@ class Criterion
      * us a string array of tables from each criterion
      *
      * @param Criterion $c
-     * @param array &$s
+     * @param array     &$s
+     *
      * @return void
      */
     private function addCriterionTable(Criterion $c, array &$s)
     {
         $s[] = $c->getTable();
-        foreach ( $c->getClauses() as $clause ) {
+        foreach ($c->getClauses() as $clause) {
             $this->addCriterionTable($clause, $s);
         }
     }
@@ -563,12 +577,14 @@ class Criterion
     /**
      * get an array of all criterion attached to this
      * recursing through all sub criterion
-     * @return array Criterion[]
+     *
+     * @return Criterion[]
      */
     public function getAttachedCriterion()
     {
         $criterions = array($this);
         foreach ($this->getClauses() as $criterion) {
+            /* @var $criterion Criterion */
             $criterions = array_merge($criterions, $criterion->getAttachedCriterion());
         }
 

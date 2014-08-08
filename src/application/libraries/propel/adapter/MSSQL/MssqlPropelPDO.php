@@ -62,7 +62,6 @@ class MssqlPropelPDO extends PropelPDO
                     if ($this->useDebug) {
                         $this->log('Commit transaction', null, __METHOD__);
                     }
-
                 }
             }
             $this->nestedTransactionCount--;
@@ -129,7 +128,8 @@ class MssqlPropelPDO extends PropelPDO
     }
 
     /**
-     * @param  string  $seqname
+     * @param string $seqname
+     *
      * @return integer
      */
     public function lastInsertId($seqname = null)
@@ -140,7 +140,8 @@ class MssqlPropelPDO extends PropelPDO
     }
 
     /**
-     * @param  string $text
+     * @param string $text
+     *
      * @return string
      */
     public function quoteIdentifier($text)

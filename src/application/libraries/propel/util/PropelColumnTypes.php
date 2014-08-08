@@ -82,13 +82,14 @@ class PropelColumnTypes
     );
 
     /**
-     * Resturns the PDO type (PDO::PARAM_* constant) value for the Propel type provided.
-     * @param  string $propelType
+     * Returns the PDO type (PDO::PARAM_* constant) value for the Propel type provided.
+     *
+     * @param string $propelType
+     *
      * @return int
      */
     public static function getPdoType($propelType)
     {
         return self::$propelToPdoMap[$propelType];
     }
-
 }

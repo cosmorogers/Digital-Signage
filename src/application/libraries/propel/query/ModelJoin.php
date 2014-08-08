@@ -16,8 +16,19 @@
  */
 class ModelJoin extends Join
 {
+    /**
+     * @var RelationMap
+     */
     protected $relationMap;
+
+    /**
+     * @var TableMap
+     */
     protected $tableMap;
+
+    /**
+     * @var ModelJoin
+     */
     protected $previousJoin;
 
     public function setRelationMap(RelationMap $relationMap, $leftTableAlias = null, $relationAlias = null)
@@ -25,7 +36,7 @@ class ModelJoin extends Join
         $leftCols = $relationMap->getLeftColumns();
         $rightCols = $relationMap->getRightColumns();
         $nbColumns = $relationMap->countColumnMappings();
-        for ($i=0; $i < $nbColumns; $i++) {
+        for ($i = 0; $i < $nbColumns; $i++) {
             $this->addExplicitCondition(
                 $leftCols[$i]->getTableName(), $leftCols[$i]->getName(), $leftTableAlias,
                 $rightCols[$i]->getTableName(), $rightCols[$i]->getName(), $relationAlias,
@@ -71,6 +82,7 @@ class ModelJoin extends Join
 
     /**
      * @param ModelJoin $join
+     *
      * @return ModelJoin
      */
     public function setPreviousJoin(ModelJoin $join)
@@ -110,6 +122,7 @@ class ModelJoin extends Join
     {
         return $this->hasRightTableAlias();
     }
+
     /**
      * This method returns the last related, but already hydrated object up until this join
      * Starting from $startObject and continuously calling the getters to get
@@ -118,7 +131,8 @@ class ModelJoin extends Join
      * This method only works if PreviousJoin has been defined,
      * which only happens when you provide dotted relations when calling join
      *
-     * @param  Object $startObject the start object all joins originate from and which has already hydrated
+     * @param Object $startObject the start object all joins originate from and which has already hydrated
+     *
      * @return Object the base Object of this join
      */
     public function getObjectToRelate($startObject)
@@ -136,6 +150,7 @@ class ModelJoin extends Join
 
     /**
      * @param ModelJoin $join
+     *
      * @return bool
      */
     public function equals($join)

@@ -38,6 +38,7 @@ abstract class DBAdapter
 
     /**
      * Propel driver to Propel adapter map.
+     *
      * @var array
      */
     private static $adapters = array(
@@ -77,7 +78,8 @@ abstract class DBAdapter
     /**
      * Prepare connection parameters.
      *
-     * @param  array $params
+     * @param array $settings
+     *
      * @return array
      */
     public function prepareParams($settings)
@@ -132,7 +134,8 @@ abstract class DBAdapter
     /**
      * This method is used to ignore case.
      *
-     * @param  string $in The string to transform to upper case.
+     * @param string $in The string to transform to upper case.
+     *
      * @return string The upper case string.
      */
     abstract public function toUpperCase($in);
@@ -142,7 +145,7 @@ abstract class DBAdapter
      * a piece of text used in a SQL statement (generally a single
      * quote).
      *
-     * @return string The text delimeter.
+     * @return string The text delimiter.
      */
     public function getStringDelimiter()
     {
@@ -152,7 +155,8 @@ abstract class DBAdapter
     /**
      * This method is used to ignore case.
      *
-     * @param  string $in The string whose case to ignore.
+     * @param string $in The string whose case to ignore.
+     *
      * @return string The string in a case that can be ignored.
      */
     abstract public function ignoreCase($in);
@@ -163,7 +167,8 @@ abstract class DBAdapter
      * (Interbase for example) does not use the same SQL in ORDER BY
      * and other clauses.
      *
-     * @param  string $in The string whose case to ignore.
+     * @param string $in The string whose case to ignore.
+     *
      * @return string The string in a case that can be ignored.
      */
     public function ignoreCaseInOrderBy($in)
@@ -195,14 +200,17 @@ abstract class DBAdapter
     /**
      * Returns SQL which calculates the length (in chars) of a string.
      *
-     * @param  string $s String to calculate length of.
+     * @param string $s String to calculate length of.
+     *
      * @return string
      */
     abstract public function strLength($s);
 
     /**
      * Quotes database objec identifiers (table names, col names, sequences, etc.).
-     * @param  string $text The identifier to quote.
+     *
+     * @param string $text The identifier to quote.
+     *
      * @return string The quoted identifier.
      */
     public function quoteIdentifier($text)
@@ -211,16 +219,17 @@ abstract class DBAdapter
     }
 
     /**
-     * Quotes a database table which could have space seperating it from an alias, both should be identified seperately
+     * Quotes a database table which could have space separating it from an alias, both should be identified separately
      * This doesn't take care of dots which separate schema names from table names. Adapters for RDBMs which support
      * schemas have to implement that in the platform-specific way.
      *
-     * @param  string $table The table name to quo
+     * @param string $table The table name to quo
+     *
      * @return string The quoted table name
      **/
     public function quoteIdentifierTable($table)
     {
-        return implode(" ", array_map(array($this, "quoteIdentifier"), explode(" ", $table) ) );
+        return implode(" ", array_map(array($this, "quoteIdentifier"), explode(" ", $table)));
     }
 
     /**
@@ -269,7 +278,7 @@ abstract class DBAdapter
     }
 
     /**
-     * Formats a temporal value brefore binding, given a ColumnMap object.
+     * Formats a temporal value before binding, given a ColumnMap object.
      *
      * @param mixed $value The temporal value
      * @param mixed $type  PropelColumnTypes constant, or ColumnMap object
@@ -461,7 +470,7 @@ abstract class DBAdapter
 
         // set the aliases
         foreach ($criteria->getAsColumns() as $alias => $col) {
-            $selectClause[] = $col . ' AS ' . $alias;
+            $selectClause[] = $col . ' AS ' . $this->quoteIdentifier($alias);
         }
 
         $selectModifiers = $criteria->getSelectModifiers();
@@ -483,7 +492,8 @@ abstract class DBAdapter
      *
      * @see http://propel.phpdb.org/trac/ticket/795
      *
-     * @param  Criteria $criteria
+     * @param Criteria $criteria
+     *
      * @return Criteria The input, with Select columns replaced by aliases
      */
     public function turnSelectColumnsToAliases(Criteria $criteria)
@@ -588,10 +598,11 @@ abstract class DBAdapter
     /**
      * Do Explain Plan for query object or query string
      *
-     * @param  PropelPDO            $con   propel connection
-     * @param  ModelCriteria|string $query query the criteria or the query string
-     * @throws PropelException      if explain plan is not implemented for adapter
-     * @return PDOStatement         A PDO statement executed using the connection, ready to be fetched
+     * @param PropelPDO            $con   propel connection
+     * @param ModelCriteria|string $query query the criteria or the query string
+     *
+     * @throws PropelException if explain plan is not implemented for adapter
+     * @return PDOStatement    A PDO statement executed using the connection, ready to be fetched
      */
     public function doExplainPlan(PropelPDO $con, $query)
     {

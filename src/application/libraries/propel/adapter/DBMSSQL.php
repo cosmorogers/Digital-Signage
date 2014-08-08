@@ -32,7 +32,8 @@ class DBMSSQL extends DBAdapter
     /**
      * This method is used to ignore case.
      *
-     * @param  string $in The string to transform to upper case.
+     * @param string $in The string to transform to upper case.
+     *
      * @return string The upper case string.
      */
     public function toUpperCase($in)
@@ -43,7 +44,8 @@ class DBMSSQL extends DBAdapter
     /**
      * This method is used to ignore case.
      *
-     * @param  string $in The string whose case to ignore.
+     * @param string $in The string whose case to ignore.
+     *
      * @return string The string in a case that can be ignored.
      */
     public function ignoreCase($in)
@@ -81,7 +83,8 @@ class DBMSSQL extends DBAdapter
     /**
      * Returns SQL which calculates the length (in chars) of a string.
      *
-     * @param  string $s String to calculate length of.
+     * @param string $s String to calculate length of.
+     *
      * @return string
      */
     public function strLength($s)
@@ -92,7 +95,8 @@ class DBMSSQL extends DBAdapter
     /**
      * @see       DBAdapter::quoteIdentifier()
      *
-     * @param  string $text
+     * @param string $text
+     *
      * @return string
      */
     public function quoteIdentifier($text)
@@ -103,7 +107,8 @@ class DBMSSQL extends DBAdapter
     /**
      * @see       DBAdapter::quoteIdentifierTable()
      *
-     * @param  string $table
+     * @param string $table
+     *
      * @return string
      */
     public function quoteIdentifierTable($table)
@@ -115,7 +120,8 @@ class DBMSSQL extends DBAdapter
     /**
      * @see       DBAdapter::random()
      *
-     * @param  string $seed
+     * @param string $seed
+     *
      * @return string
      */
     public function random($seed = null)
@@ -144,7 +150,7 @@ class DBMSSQL extends DBAdapter
     public function applyLimit(&$sql, $offset, $limit)
     {
         // make sure offset and limit are numeric
-        if (! is_numeric($offset) || ! is_numeric($limit)) {
+        if (!is_numeric($offset) || !is_numeric($limit)) {
             throw new PropelException('DBMSSQL::applyLimit() expects a number for argument 2 and 3');
         }
 
@@ -166,7 +172,7 @@ class DBMSSQL extends DBAdapter
             $selectStatement = str_ireplace('distinct ', '', $selectStatement);
         }
 
-        // if we're starting at offset 0 then theres no need to simulate limit,
+        // if we're starting at offset 0 then theres no need to simulate LIMIT,
         // just grab the top $limit number of rows
         if ($offset == 0) {
             $sql = $selectText . 'TOP ' . $limit . ' ' . $selectStatement . ' FROM ' . $fromStatement;
@@ -179,13 +185,13 @@ class DBMSSQL extends DBAdapter
         $orders = '';
 
         if ($orderStatement !== false) {
-            //remove order statement from the from statement
+            //remove order statement from the FROM statement
             $fromStatement = trim(str_replace($orderStatement, '', $fromStatement));
 
             $order = str_ireplace('ORDER BY', '', $orderStatement);
-            $orders = explode(',', $order);
+            $orders = array_map('trim', explode(',', $order));
 
-            for ($i = 0; $i < count($orders); $i ++) {
+            for ($i = 0; $i < count($orders); $i++) {
                 $orderArr[trim(preg_replace('/\s+(ASC|DESC)$/i', '', $orders[$i]))] = array(
                     'sort' => (stripos($orders[$i], ' DESC') !== false) ? 'DESC' : 'ASC',
                     'key' => $i
@@ -201,18 +207,37 @@ class DBMSSQL extends DBAdapter
             $selColCount = count($selColArr) - 1;
 
             //make sure the current column isn't * or an aggregate
-            if ($selColArr[0] != '*' && ! strstr($selColArr[0], '(')) {
+            if ($selColArr[0] != '*' && !strstr($selColArr[0], '(') && strtoupper($selColArr[0]) !== 'CASE') {
+
+                // Aliases can be used in ORDER BY clauses on a SELECT,
+                // but aliases are not valid in the ORDER BY clause of ROW_NUMBER() OVER (...),
+                // so if we notice that part of $order is actually an alias,
+                // we replace it with the original Table.Column designation.
+                if ($selColCount) {
+                    // column with alias
+                    foreach (array(' ASC', ' DESC') as $sort) {
+                        $index = array_search($selColArr[2] . $sort, $orders);
+                        if ($index !== false) {
+                            // replace alias with "Table.Column ASC/DESC"
+                            $orders[$index] = $selColArr[0] . $sort;
+                            break;
+                        }
+                    }
+                }
+
                 if (isset($orderArr[$selColArr[0]])) {
                     $orders[$orderArr[$selColArr[0]]['key']] = $selColArr[0] . ' ' . $orderArr[$selColArr[0]]['sort'];
                 }
 
                 //use the alias if one was present otherwise use the column name
-                $alias = (! stristr($selCol, ' AS ')) ? $selColArr[0] : $selColArr[$selColCount];
+                $alias = (!stristr($selCol, ' AS ')) ? $selColArr[0] : $selColArr[$selColCount];
                 //don't quote the identifier if it is already quoted
-                if($alias[0] != '[') $alias = $this->quoteIdentifier($alias);
+                if ($alias[0] != '[') {
+                    $alias = $this->quoteIdentifier($alias);
+                }
 
                 //save the first non-aggregate column for use in ROW_NUMBER() if required
-                if (! isset($firstColumnOrderStatement)) {
+                if (!isset($firstColumnOrderStatement)) {
                     $firstColumnOrderStatement = 'ORDER BY ' . $selColArr[0];
                 }
 
@@ -220,8 +245,8 @@ class DBMSSQL extends DBAdapter
                 $innerSelect .= $selColArr[0] . ' AS ' . $alias . ', ';
                 $outerSelect .= $alias . ', ';
             } else {
-                //agregate columns must always have an alias clause
-                if (! stristr($selCol, ' AS ')) {
+                //aggregate columns must always have an alias clause
+                if (!stristr($selCol, ' AS ')) {
                     throw new Exception('DBMSSQL::applyLimit() requires aggregate columns to have an Alias clause');
                 }
 
@@ -233,7 +258,9 @@ class DBMSSQL extends DBAdapter
                 //quote the alias
                 $alias = $selColArr[$selColCount];
                 //don't quote the identifier if it is already quoted
-                if($alias[0] != '[') $alias = $this->quoteIdentifier($alias);
+                if ($alias[0] != '[') {
+                    $alias = $this->quoteIdentifier($alias);
+                }
                 $innerSelect .= str_replace($selColArr[$selColCount], $alias, $selCol) . ', ';
                 $outerSelect .= $alias . ', ';
             }
@@ -251,9 +278,9 @@ class DBMSSQL extends DBAdapter
         }
 
         //substring the select strings to get rid of the last comma and add our FROM and SELECT clauses
-        $innerSelect = $selectText . 'ROW_NUMBER() OVER(' . $orderStatement . ') AS [RowNumber], ' . substr($innerSelect, 0, - 2) . ' FROM';
+        $innerSelect = $selectText . 'ROW_NUMBER() OVER(' . $orderStatement . ') AS [RowNumber], ' . substr($innerSelect, 0, -2) . ' FROM';
         //outer select can't use * because of the RowNumber column
-        $outerSelect = 'SELECT ' . substr($outerSelect, 0, - 2) . ' FROM';
+        $outerSelect = 'SELECT ' . substr($outerSelect, 0, -2) . ' FROM';
 
         //ROW_NUMBER() starts at 1 not 0
         $sql = $outerSelect . ' (' . $innerSelect . ' ' . $fromStatement . ') AS derivedb WHERE RowNumber BETWEEN ' . ($offset + 1) . ' AND ' . ($limit + $offset);
@@ -299,7 +326,7 @@ class DBMSSQL extends DBAdapter
             unset($paramCols);
             preg_match_all('/:p\d/', $sql, $matches);
             foreach ($matches[0] as $key => $match) {
-                $sql = str_replace($match, ':p'.($key+1), $sql);
+                $sql = str_replace($match, ':p' . ($key + 1), $sql);
             }
         }
     }
