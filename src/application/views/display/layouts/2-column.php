@@ -58,6 +58,7 @@ $t = $screen->getTemplate();
         .cycle-pager span.cycle-pager-active { color: #8D1950;}
         .cycle-pager > * { cursor: pointer;}
         #progress { position: absolute; bottom: -30px; height: 1px; width: 0px; background: #8D1950; z-index: 500; }
+        .table th, .table td { text-align: center; vertical-align: middle;}
     </style>
 
 </head>
