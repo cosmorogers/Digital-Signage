@@ -18,6 +18,10 @@
  * @method TemplateQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method TemplateQuery innerJoin($relation) Adds a INNER JOIN clause to the query
  *
+ * @method TemplateQuery leftJoinScreen($relationAlias = null) Adds a LEFT JOIN clause to the query using the Screen relation
+ * @method TemplateQuery rightJoinScreen($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Screen relation
+ * @method TemplateQuery innerJoinScreen($relationAlias = null) Adds a INNER JOIN clause to the query using the Screen relation
+ *
  * @method TemplateQuery leftJoinTemplateWidget($relationAlias = null) Adds a LEFT JOIN clause to the query using the TemplateWidget relation
  * @method TemplateQuery rightJoinTemplateWidget($relationAlias = null) Adds a RIGHT JOIN clause to the query using the TemplateWidget relation
  * @method TemplateQuery innerJoinTemplateWidget($relationAlias = null) Adds a INNER JOIN clause to the query using the TemplateWidget relation
@@ -325,6 +329,80 @@ abstract class BaseTemplateQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(TemplatePeer::LAYOUT, $layout, $comparison);
+    }
+
+    /**
+     * Filter the query by a related Screen object
+     *
+     * @param   Screen|PropelObjectCollection $screen  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 TemplateQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByScreen($screen, $comparison = null)
+    {
+        if ($screen instanceof Screen) {
+            return $this
+                ->addUsingAlias(TemplatePeer::ID, $screen->getTemplateId(), $comparison);
+        } elseif ($screen instanceof PropelObjectCollection) {
+            return $this
+                ->useScreenQuery()
+                ->filterByPrimaryKeys($screen->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByScreen() only accepts arguments of type Screen or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Screen relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return TemplateQuery The current query, for fluid interface
+     */
+    public function joinScreen($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Screen');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Screen');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Screen relation Screen object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   ScreenQuery A secondary query class using the current class as primary query
+     */
+    public function useScreenQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    {
+        return $this
+            ->joinScreen($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Screen', 'ScreenQuery');
     }
 
     /**

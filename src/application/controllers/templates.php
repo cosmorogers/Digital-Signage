@@ -84,20 +84,25 @@ class Templates extends MY_Controller {
 		}
 	}
 
-    public function addWidget($templateId)
+    public function saveWidget($templateId)
     {
-        $template = TemplateQuery::CREATE()->findOneById($templateId);
-        if (!is_null($template) && $data = $this->input->get('widget')) {
-            $widget = WidgetQuery::CREATE()->findOneByName($data['name']);
+        $template = TemplateQuery::create()->findOneById($templateId);
+        if (!is_null($template) && $data = $this->input->post('widget')) {
+            $widget = WidgetQuery::create()->findOneByName($data['name']);
             if (!is_null($widget)) {
                 $templateWidget = new TemplateWidget();
                 $templateWidget->setTemplate($template)
                     ->setWidget($widget)
                     ->setContainer($data['container'])
+                    ->setData(serialize($data['settings']))
                     ->save();
 
-                return $widget->getClass()->getForm();
+                echo json_encode(array('success' => true));
+            } else {
+                echo 'widget not found';
             }
+        } else {
+            echo 'Template not found' . $templateId;
         }
     }
 
@@ -110,11 +115,13 @@ class Templates extends MY_Controller {
     }
 
 
-    public function removeWidget($widgetId)
+    public function removeWidget()
     {
-        $templateWidget = TemplateWidgetQuery::CREATE()->findOneById($widgetId);
-        if (!is_null($templateWidget)) {
-            $templateWidget->delete();
+        if ($widgetId = $this->input->post('id')) {
+            $templateWidget = TemplateWidgetQuery::CREATE()->findOneById($widgetId);
+            if (!is_null($templateWidget)) {
+                $templateWidget->delete();
+            }
         }
     }
 

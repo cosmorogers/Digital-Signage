@@ -78,6 +78,17 @@ abstract class BaseScreen extends BaseObject implements Persistent
     protected $mac;
 
     /**
+     * The value for the template_id field.
+     * @var        int
+     */
+    protected $template_id;
+
+    /**
+     * @var        Template
+     */
+    protected $aTemplate;
+
+    /**
      * @var        PropelObjectCollection|ScreenMessage[] Collection to store aggregation of ScreenMessage objects.
      */
     protected $collScreenMessages;
@@ -235,6 +246,17 @@ abstract class BaseScreen extends BaseObject implements Persistent
     {
 
         return $this->mac;
+    }
+
+    /**
+     * Get the [template_id] column value.
+     *
+     * @return int
+     */
+    public function getTemplateId()
+    {
+
+        return $this->template_id;
     }
 
     /**
@@ -408,6 +430,31 @@ abstract class BaseScreen extends BaseObject implements Persistent
     } // setMac()
 
     /**
+     * Set the value of [template_id] column.
+     *
+     * @param  int $v new value
+     * @return Screen The current object (for fluent API support)
+     */
+    public function setTemplateId($v)
+    {
+        if ($v !== null && is_numeric($v)) {
+            $v = (int) $v;
+        }
+
+        if ($this->template_id !== $v) {
+            $this->template_id = $v;
+            $this->modifiedColumns[] = ScreenPeer::TEMPLATE_ID;
+        }
+
+        if ($this->aTemplate !== null && $this->aTemplate->getId() !== $v) {
+            $this->aTemplate = null;
+        }
+
+
+        return $this;
+    } // setTemplateId()
+
+    /**
      * Indicates whether the columns in this object are only set to default values.
      *
      * This method can be used in conjunction with isModified() to indicate whether an object is both
@@ -447,6 +494,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
             $this->height = ($row[$startcol + 5] !== null) ? (int) $row[$startcol + 5] : null;
             $this->last_seen = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
             $this->mac = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
+            $this->template_id = ($row[$startcol + 8] !== null) ? (int) $row[$startcol + 8] : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -456,7 +504,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
             }
             $this->postHydrate($row, $startcol, $rehydrate);
 
-            return $startcol + 8; // 8 = ScreenPeer::NUM_HYDRATE_COLUMNS.
+            return $startcol + 9; // 9 = ScreenPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
             throw new PropelException("Error populating Screen object", $e);
@@ -479,6 +527,9 @@ abstract class BaseScreen extends BaseObject implements Persistent
     public function ensureConsistency()
     {
 
+        if ($this->aTemplate !== null && $this->template_id !== $this->aTemplate->getId()) {
+            $this->aTemplate = null;
+        }
     } // ensureConsistency
 
     /**
@@ -518,6 +569,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
 
         if ($deep) {  // also de-associate any related objects?
 
+            $this->aTemplate = null;
             $this->collScreenMessages = null;
 
             $this->collMessages = null;
@@ -634,6 +686,18 @@ abstract class BaseScreen extends BaseObject implements Persistent
         if (!$this->alreadyInSave) {
             $this->alreadyInSave = true;
 
+            // We call the save method on the following object(s) if they
+            // were passed to this object by their corresponding set
+            // method.  This object relates to these object(s) by a
+            // foreign key reference.
+
+            if ($this->aTemplate !== null) {
+                if ($this->aTemplate->isModified() || $this->aTemplate->isNew()) {
+                    $affectedRows += $this->aTemplate->save($con);
+                }
+                $this->setTemplate($this->aTemplate);
+            }
+
             if ($this->isNew() || $this->isModified()) {
                 // persist changes
                 if ($this->isNew()) {
@@ -738,6 +802,9 @@ abstract class BaseScreen extends BaseObject implements Persistent
         if ($this->isColumnModified(ScreenPeer::MAC)) {
             $modifiedColumns[':p' . $index++]  = '`mac`';
         }
+        if ($this->isColumnModified(ScreenPeer::TEMPLATE_ID)) {
+            $modifiedColumns[':p' . $index++]  = '`template_id`';
+        }
 
         $sql = sprintf(
             'INSERT INTO `screen` (%s) VALUES (%s)',
@@ -772,6 +839,9 @@ abstract class BaseScreen extends BaseObject implements Persistent
                         break;
                     case '`mac`':
                         $stmt->bindValue($identifier, $this->mac, PDO::PARAM_STR);
+                        break;
+                    case '`template_id`':
+                        $stmt->bindValue($identifier, $this->template_id, PDO::PARAM_INT);
                         break;
                 }
             }
@@ -867,6 +937,18 @@ abstract class BaseScreen extends BaseObject implements Persistent
             $failureMap = array();
 
 
+            // We call the validate method on the following object(s) if they
+            // were passed to this object by their corresponding set
+            // method.  This object relates to these object(s) by a
+            // foreign key reference.
+
+            if ($this->aTemplate !== null) {
+                if (!$this->aTemplate->validate($columns)) {
+                    $failureMap = array_merge($failureMap, $this->aTemplate->getValidationFailures());
+                }
+            }
+
+
             if (($retval = ScreenPeer::doValidate($this, $columns)) !== true) {
                 $failureMap = array_merge($failureMap, $retval);
             }
@@ -939,6 +1021,9 @@ abstract class BaseScreen extends BaseObject implements Persistent
             case 7:
                 return $this->getMac();
                 break;
+            case 8:
+                return $this->getTemplateId();
+                break;
             default:
                 return null;
                 break;
@@ -976,6 +1061,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
             $keys[5] => $this->getHeight(),
             $keys[6] => $this->getLastSeen(),
             $keys[7] => $this->getMac(),
+            $keys[8] => $this->getTemplateId(),
         );
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
@@ -983,6 +1069,9 @@ abstract class BaseScreen extends BaseObject implements Persistent
         }
 
         if ($includeForeignObjects) {
+            if (null !== $this->aTemplate) {
+                $result['Template'] = $this->aTemplate->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
+            }
             if (null !== $this->collScreenMessages) {
                 $result['ScreenMessages'] = $this->collScreenMessages->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
             }
@@ -1044,6 +1133,9 @@ abstract class BaseScreen extends BaseObject implements Persistent
             case 7:
                 $this->setMac($value);
                 break;
+            case 8:
+                $this->setTemplateId($value);
+                break;
         } // switch()
     }
 
@@ -1076,6 +1168,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
         if (array_key_exists($keys[5], $arr)) $this->setHeight($arr[$keys[5]]);
         if (array_key_exists($keys[6], $arr)) $this->setLastSeen($arr[$keys[6]]);
         if (array_key_exists($keys[7], $arr)) $this->setMac($arr[$keys[7]]);
+        if (array_key_exists($keys[8], $arr)) $this->setTemplateId($arr[$keys[8]]);
     }
 
     /**
@@ -1095,6 +1188,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
         if ($this->isColumnModified(ScreenPeer::HEIGHT)) $criteria->add(ScreenPeer::HEIGHT, $this->height);
         if ($this->isColumnModified(ScreenPeer::LAST_SEEN)) $criteria->add(ScreenPeer::LAST_SEEN, $this->last_seen);
         if ($this->isColumnModified(ScreenPeer::MAC)) $criteria->add(ScreenPeer::MAC, $this->mac);
+        if ($this->isColumnModified(ScreenPeer::TEMPLATE_ID)) $criteria->add(ScreenPeer::TEMPLATE_ID, $this->template_id);
 
         return $criteria;
     }
@@ -1165,6 +1259,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
         $copyObj->setHeight($this->getHeight());
         $copyObj->setLastSeen($this->getLastSeen());
         $copyObj->setMac($this->getMac());
+        $copyObj->setTemplateId($this->getTemplateId());
 
         if ($deepCopy && !$this->startCopy) {
             // important: temporarily setNew(false) because this affects the behavior of
@@ -1227,6 +1322,58 @@ abstract class BaseScreen extends BaseObject implements Persistent
         }
 
         return self::$peer;
+    }
+
+    /**
+     * Declares an association between this object and a Template object.
+     *
+     * @param                  Template $v
+     * @return Screen The current object (for fluent API support)
+     * @throws PropelException
+     */
+    public function setTemplate(Template $v = null)
+    {
+        if ($v === null) {
+            $this->setTemplateId(NULL);
+        } else {
+            $this->setTemplateId($v->getId());
+        }
+
+        $this->aTemplate = $v;
+
+        // Add binding for other direction of this n:n relationship.
+        // If this object has already been added to the Template object, it will not be re-added.
+        if ($v !== null) {
+            $v->addScreen($this);
+        }
+
+
+        return $this;
+    }
+
+
+    /**
+     * Get the associated Template object
+     *
+     * @param PropelPDO $con Optional Connection object.
+     * @param $doQuery Executes a query to get the object if required
+     * @return Template The associated Template object.
+     * @throws PropelException
+     */
+    public function getTemplate(PropelPDO $con = null, $doQuery = true)
+    {
+        if ($this->aTemplate === null && ($this->template_id !== null) && $doQuery) {
+            $this->aTemplate = TemplateQuery::create()->findPk($this->template_id, $con);
+            /* The following can be used additionally to
+                guarantee the related object contains a reference
+                to this object.  This level of coupling may, however, be
+                undesirable since it could result in an only partially populated collection
+                in the referenced object.
+                $this->aTemplate->addScreens($this);
+             */
+        }
+
+        return $this->aTemplate;
     }
 
 
@@ -1698,6 +1845,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
         $this->height = null;
         $this->last_seen = null;
         $this->mac = null;
+        $this->template_id = null;
         $this->alreadyInSave = false;
         $this->alreadyInValidation = false;
         $this->alreadyInClearAllReferencesDeep = false;
@@ -1730,6 +1878,9 @@ abstract class BaseScreen extends BaseObject implements Persistent
                     $o->clearAllReferences($deep);
                 }
             }
+            if ($this->aTemplate instanceof Persistent) {
+              $this->aTemplate->clearAllReferences($deep);
+            }
 
             $this->alreadyInClearAllReferencesDeep = false;
         } // if ($deep)
@@ -1742,6 +1893,7 @@ abstract class BaseScreen extends BaseObject implements Persistent
             $this->collMessages->clearIterator();
         }
         $this->collMessages = null;
+        $this->aTemplate = null;
     }
 
     /**

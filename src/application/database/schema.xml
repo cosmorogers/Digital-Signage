@@ -10,7 +10,12 @@
 		<column name="height"		type="integer" 				required="true" />
 		<column name="last_seen"	type="TIMESTAMP" 			required="false"/>
 		<column name="mac" 			type="varchar" size="24"	required="true" />
-		
+        <column name="template_id"  type="INTEGER"              required="true" />
+
+        <foreign-key foreignTable="template">
+            <reference local="template_id" foreign="id" />
+        </foreign-key>
+
 		<validator column="name">
   			<rule name="required" message="Name is required." />
   			<rule name="maxLength" value="255" message="Name can be no larger than ${value} charactors in length" />
@@ -29,6 +34,9 @@
 		<validator column="height">
   			<rule name="type" value="integer" message="Height must be an integer." />
 		</validator>
+        <validator column="template_id">
+            <rule name="required" message="A Template for this screen to use is required" />
+        </validator>
 
 	</table>
 

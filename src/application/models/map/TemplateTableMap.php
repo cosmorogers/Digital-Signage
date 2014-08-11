@@ -51,6 +51,7 @@ class TemplateTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('Screen', 'Screen', RelationMap::ONE_TO_MANY, array('id' => 'template_id', ), null, null, 'Screens');
         $this->addRelation('TemplateWidget', 'TemplateWidget', RelationMap::ONE_TO_MANY, array('id' => 'template_id', ), 'CASCADE', null, 'TemplateWidgets');
     } // buildRelations()
 

@@ -52,15 +52,15 @@ $forms = array();
                         ?>
 						<div class="panel">
 							<h4 class="popover-title">
-								<?php echo $widget->getClass()->getName(); ?>
+								<?php echo $widget->getWidget()->getClass()->getName(); ?>
 								<i class="icon-chevron-up pull-right panel-collapse"></i>
 							</h4>
-							<div class="popover-content">
-							    <form>
-									<fieldset>
-                                        <?php echo $widget->getClass()->getForm(); ?>
-                                    </fieldset>
-								</form>
+							<div class="popover-content" data-widget="<?php echo $widget->getWidget()->getName()?>" data-id="<?php echo $widget->getId(); ?>">
+                                <?php echo $widget->getWidget()->getClass()->form($widget->getData()); ?>
+                                <div>
+                                    <button class="btn btn-primary" type="submit">Save</button>
+                                    <button class="btn btn-danger pull-right remove-widget" type="submit"><i class="icon-trash icon-white"></i></button>
+                                </div>
 							</div>
 						</div>
                         <?php endif;?>
@@ -73,9 +73,14 @@ $forms = array();
 
 <script>
     var forms = <?php echo json_encode($forms);?>;
-    var addWidget = <?php echo site_url('templates/addWidget'); ?>
+    var widgetUrl = '<?php echo site_url('templates'); ?>';
+    var templateId = <?php echo $template->getId(); ?>;
+    var token = {
+        'name' : '<?php echo $this->security->get_csrf_token_name(); ?>',
+        'value' : '<?php echo $this->security->get_csrf_hash(); ?>'
+    };
 </script>
 <?php
-$js = array('edit-template.js');
-$this->view('templates/footer', array ('js' => array('edit-template.js')));
+$js = array('jquery.serialize-object.min.js', 'edit-template.js');
+$this->view('templates/footer', array ('js' => $js));
 ?>

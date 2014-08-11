@@ -19,7 +19,7 @@ class Display extends MY_Controller {
 
 			$screen->checkIn();
 
-			$this->load->helper('url');
+			/*$this->load->helper('url');
 			$design = $screen->getMachineFriendlyName();
 			//Yay
 
@@ -27,7 +27,15 @@ class Display extends MY_Controller {
 				$this->load->view('display/screen/' . $design, array('screen' => $screen));
 			} else {
 				$this->load->view('display/view', array('screen' => $screen));
-			}
+			}*/
+
+            $layout = $screen->getTemplate()->getLayout();
+            if (@file_exists(APPPATH . "views/display/layouts/" . $layout )) {
+                $this->load->view("display/layouts/" . $layout , array('screen' => $screen));
+            } else {
+                //Layout not there!
+            }
+
 		}
 	}
 }

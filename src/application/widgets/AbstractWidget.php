@@ -20,9 +20,12 @@ abstract class AbstractWidget
         $this->description = $description;
     }
 
-    abstract public function form($settings);
+    public function form($settings)
+    {
+        return '<form><fieldset></fieldset></form>';
+    }
 
-    abstract public function view($settings);
+    abstract public function view($settings, Screen $screen);
 
     public function update($settings)
     {
@@ -32,7 +35,7 @@ abstract class AbstractWidget
 
     public function scripts()
     {
-        return '';
+        return array();
     }
 
     public function getName()

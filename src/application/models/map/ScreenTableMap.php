@@ -46,6 +46,7 @@ class ScreenTableMap extends TableMap
         $this->addColumn('height', 'Height', 'INTEGER', true, null, null);
         $this->addColumn('last_seen', 'LastSeen', 'TIMESTAMP', false, null, null);
         $this->addColumn('mac', 'Mac', 'VARCHAR', true, 24, null);
+        $this->addForeignKey('template_id', 'TemplateId', 'INTEGER', 'template', 'id', true, null, null);
         // validators
         $this->addValidator('name', 'required', 'propel.validator.RequiredValidator', '', 'Name is required.');
         $this->addValidator('name', 'maxLength', 'propel.validator.MaxLengthValidator', '255', 'Name can be no larger than 255 charactors in length');
@@ -55,6 +56,7 @@ class ScreenTableMap extends TableMap
         $this->addValidator('mac', 'class', 'application.libraries.propel.validator.MacValidator', '', 'MAC address must be a valid MAC address, seperated with a colon (:).');
         $this->addValidator('width', 'type', 'propel.validator.TypeValidator', 'integer', 'Width must be an integer.');
         $this->addValidator('height', 'type', 'propel.validator.TypeValidator', 'integer', 'Height must be an integer.');
+        $this->addValidator('template_id', 'required', 'propel.validator.RequiredValidator', '', 'A Template for this screen to use is required');
     } // initialize()
 
     /**
@@ -62,6 +64,7 @@ class ScreenTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('Template', 'Template', RelationMap::MANY_TO_ONE, array('template_id' => 'id', ), null, null);
         $this->addRelation('ScreenMessage', 'ScreenMessage', RelationMap::ONE_TO_MANY, array('id' => 'screen_id', ), 'CASCADE', null, 'ScreenMessages');
         $this->addRelation('Message', 'Message', RelationMap::MANY_TO_MANY, array(), 'CASCADE', null, 'Messages');
     } // buildRelations()

@@ -19,7 +19,12 @@ CREATE TABLE `screen`
     `height` INTEGER NOT NULL,
     `last_seen` DATETIME,
     `mac` VARCHAR(24) NOT NULL,
-    PRIMARY KEY (`id`)
+    `template_id` INTEGER NOT NULL,
+    PRIMARY KEY (`id`),
+    INDEX `screen_FI_1` (`template_id`),
+    CONSTRAINT `screen_FK_1`
+        FOREIGN KEY (`template_id`)
+        REFERENCES `template` (`id`)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------

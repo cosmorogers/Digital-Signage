@@ -53,8 +53,8 @@ class Screens extends MY_Controller {
 			}
 			
 		}
-		
-		$this->load->view('screens/form', array('screen' => $screen, 'errors' => $errors));
+		$templates = TemplateQuery::create()->orderByName()->find();
+		$this->load->view('screens/form', array('screen' => $screen, 'errors' => $errors, 'templates' => $templates));
 	}
 	
 	public function delete($id) 

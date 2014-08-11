@@ -14,6 +14,7 @@
  * @method ScreenQuery orderByHeight($order = Criteria::ASC) Order by the height column
  * @method ScreenQuery orderByLastSeen($order = Criteria::ASC) Order by the last_seen column
  * @method ScreenQuery orderByMac($order = Criteria::ASC) Order by the mac column
+ * @method ScreenQuery orderByTemplateId($order = Criteria::ASC) Order by the template_id column
  *
  * @method ScreenQuery groupById() Group by the id column
  * @method ScreenQuery groupByName() Group by the name column
@@ -23,10 +24,15 @@
  * @method ScreenQuery groupByHeight() Group by the height column
  * @method ScreenQuery groupByLastSeen() Group by the last_seen column
  * @method ScreenQuery groupByMac() Group by the mac column
+ * @method ScreenQuery groupByTemplateId() Group by the template_id column
  *
  * @method ScreenQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method ScreenQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method ScreenQuery innerJoin($relation) Adds a INNER JOIN clause to the query
+ *
+ * @method ScreenQuery leftJoinTemplate($relationAlias = null) Adds a LEFT JOIN clause to the query using the Template relation
+ * @method ScreenQuery rightJoinTemplate($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Template relation
+ * @method ScreenQuery innerJoinTemplate($relationAlias = null) Adds a INNER JOIN clause to the query using the Template relation
  *
  * @method ScreenQuery leftJoinScreenMessage($relationAlias = null) Adds a LEFT JOIN clause to the query using the ScreenMessage relation
  * @method ScreenQuery rightJoinScreenMessage($relationAlias = null) Adds a RIGHT JOIN clause to the query using the ScreenMessage relation
@@ -42,6 +48,7 @@
  * @method Screen findOneByHeight(int $height) Return the first Screen filtered by the height column
  * @method Screen findOneByLastSeen(string $last_seen) Return the first Screen filtered by the last_seen column
  * @method Screen findOneByMac(string $mac) Return the first Screen filtered by the mac column
+ * @method Screen findOneByTemplateId(int $template_id) Return the first Screen filtered by the template_id column
  *
  * @method array findById(int $id) Return Screen objects filtered by the id column
  * @method array findByName(string $name) Return Screen objects filtered by the name column
@@ -51,6 +58,7 @@
  * @method array findByHeight(int $height) Return Screen objects filtered by the height column
  * @method array findByLastSeen(string $last_seen) Return Screen objects filtered by the last_seen column
  * @method array findByMac(string $mac) Return Screen objects filtered by the mac column
+ * @method array findByTemplateId(int $template_id) Return Screen objects filtered by the template_id column
  *
  * @package    propel.generator..om
  */
@@ -158,7 +166,7 @@ abstract class BaseScreenQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT `id`, `name`, `ip`, `key`, `width`, `height`, `last_seen`, `mac` FROM `screen` WHERE `id` = :p0';
+        $sql = 'SELECT `id`, `name`, `ip`, `key`, `width`, `height`, `last_seen`, `mac`, `template_id` FROM `screen` WHERE `id` = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -543,6 +551,126 @@ abstract class BaseScreenQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(ScreenPeer::MAC, $mac, $comparison);
+    }
+
+    /**
+     * Filter the query on the template_id column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByTemplateId(1234); // WHERE template_id = 1234
+     * $query->filterByTemplateId(array(12, 34)); // WHERE template_id IN (12, 34)
+     * $query->filterByTemplateId(array('min' => 12)); // WHERE template_id >= 12
+     * $query->filterByTemplateId(array('max' => 12)); // WHERE template_id <= 12
+     * </code>
+     *
+     * @see       filterByTemplate()
+     *
+     * @param     mixed $templateId The value to use as filter.
+     *              Use scalar values for equality.
+     *              Use array values for in_array() equivalent.
+     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return ScreenQuery The current query, for fluid interface
+     */
+    public function filterByTemplateId($templateId = null, $comparison = null)
+    {
+        if (is_array($templateId)) {
+            $useMinMax = false;
+            if (isset($templateId['min'])) {
+                $this->addUsingAlias(ScreenPeer::TEMPLATE_ID, $templateId['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($templateId['max'])) {
+                $this->addUsingAlias(ScreenPeer::TEMPLATE_ID, $templateId['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+        }
+
+        return $this->addUsingAlias(ScreenPeer::TEMPLATE_ID, $templateId, $comparison);
+    }
+
+    /**
+     * Filter the query by a related Template object
+     *
+     * @param   Template|PropelObjectCollection $template The related object(s) to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 ScreenQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByTemplate($template, $comparison = null)
+    {
+        if ($template instanceof Template) {
+            return $this
+                ->addUsingAlias(ScreenPeer::TEMPLATE_ID, $template->getId(), $comparison);
+        } elseif ($template instanceof PropelObjectCollection) {
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+
+            return $this
+                ->addUsingAlias(ScreenPeer::TEMPLATE_ID, $template->toKeyValue('PrimaryKey', 'Id'), $comparison);
+        } else {
+            throw new PropelException('filterByTemplate() only accepts arguments of type Template or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Template relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return ScreenQuery The current query, for fluid interface
+     */
+    public function joinTemplate($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Template');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Template');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Template relation Template object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   TemplateQuery A secondary query class using the current class as primary query
+     */
+    public function useTemplateQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    {
+        return $this
+            ->joinTemplate($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Template', 'TemplateQuery');
     }
 
     /**

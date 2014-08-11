@@ -15,4 +15,12 @@
  */
 class TemplateWidget extends BaseTemplateWidget
 {
+
+    /**
+     * @return mixed
+     */
+    public function getData()
+    {
+        return unserialize(parent::getData());
+    }
 }

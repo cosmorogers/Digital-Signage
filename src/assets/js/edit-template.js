@@ -41,8 +41,37 @@ $(function () {
 
     $('body').on('submit', '.layout-container form', function(e) {
         e.preventDefault();
-        $.post()
+        data = {
+            'widget': {
+                'name': $(this).parents('.popover-content').data('widget'),
+                'container': $(this).parents('.layout-container').data('template-container'),
+                'settings': $(this).serializeObject()
+            }
+        };
+        data[token.name] = token.value;
+        var that = $(this);
+        $.post(widgetUrl + '/saveWidget/' + templateId, data, function (data) {
+            console.log(data);
+            that.parents('.popover-content').removeClass('widget-unsaved');
+        })
     });
+
+    $('body').on('click', '.remove-widget', function(e) {
+        e.preventDefault();
+        parent = $($(this).parents('.popover-content')[0]);
+        data = {
+            id : parent.data('id')
+        }
+        data[token.name] = token.value;
+        that = $(this);
+        $.post(widgetUrl + '/removeWidget', data, function() {
+            parent.parent('.panel').remove();
+        });
+    });
+
+    $('body').on('change', '.layout-container form', function(e) {
+        $(this).parent('.popover-content').addClass('widget-unsaved');
+    })
 
 
 });

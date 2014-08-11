@@ -58,10 +58,22 @@ $this->helper('form');
 			<span class="help-inline"><?php echo (isset($errors[ScreenPeer::HEIGHT]) ? $errors[ScreenPeer::HEIGHT] : ''); ?></span>
 		</div>
 	</div>
-	
+
+    <div class="control-group <?php echo (isset($errors[ScreenPeer::TEMPLATE_ID]) ? 'error' : ''); ?>">
+        <label class="control-label" for="inputTemplate">Template</label>
+        <div class="controls">
+            <select name="screen[TemplateId]" id="inputTemplate">
+                <?php foreach ($templates as $template) : ?>
+                <option value="<?php echo $template->getId()?>" <?php echo ($template->getId() == $screen->getTemplateId() ? 'selected="selected"' : '');?>><?php echo $template->getName();?></option>
+                <?php endforeach; ?>
+            </select>
+            <span class="help-inline"><?php echo (isset($errors[ScreenPeer::TEMPLATE_ID]) ? $errors[ScreenPeer::TEMPLATE_ID] : ''); ?></span>
+        </div>
+    </div>
 
 
-	<div class="form-actions">
+
+    <div class="form-actions">
 		<button type="submit" class="btn btn-primary">Save changes</button>
 		<a href="<?php echo site_url('screens')?>" class="btn">Cancel</a>
 	</div>

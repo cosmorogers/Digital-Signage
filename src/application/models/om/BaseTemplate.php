@@ -48,6 +48,12 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     protected $layout;
 
     /**
+     * @var        PropelObjectCollection|Screen[] Collection to store aggregation of Screen objects.
+     */
+    protected $collScreens;
+    protected $collScreensPartial;
+
+    /**
      * @var        PropelObjectCollection|TemplateWidget[] Collection to store aggregation of TemplateWidget objects.
      */
     protected $collTemplateWidgets;
@@ -72,6 +78,12 @@ abstract class BaseTemplate extends BaseObject implements Persistent
      * @var        boolean
      */
     protected $alreadyInClearAllReferencesDeep = false;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $screensScheduledForDeletion = null;
 
     /**
      * An array of objects scheduled for deletion.
@@ -281,6 +293,8 @@ abstract class BaseTemplate extends BaseObject implements Persistent
 
         if ($deep) {  // also de-associate any related objects?
 
+            $this->collScreens = null;
+
             $this->collTemplateWidgets = null;
 
         } // if (deep)
@@ -405,6 +419,23 @@ abstract class BaseTemplate extends BaseObject implements Persistent
                 }
                 $affectedRows += 1;
                 $this->resetModified();
+            }
+
+            if ($this->screensScheduledForDeletion !== null) {
+                if (!$this->screensScheduledForDeletion->isEmpty()) {
+                    ScreenQuery::create()
+                        ->filterByPrimaryKeys($this->screensScheduledForDeletion->getPrimaryKeys(false))
+                        ->delete($con);
+                    $this->screensScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collScreens !== null) {
+                foreach ($this->collScreens as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
             }
 
             if ($this->templateWidgetsScheduledForDeletion !== null) {
@@ -578,6 +609,14 @@ abstract class BaseTemplate extends BaseObject implements Persistent
             }
 
 
+                if ($this->collScreens !== null) {
+                    foreach ($this->collScreens as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
                 if ($this->collTemplateWidgets !== null) {
                     foreach ($this->collTemplateWidgets as $referrerFK) {
                         if (!$referrerFK->validate($columns)) {
@@ -669,6 +708,9 @@ abstract class BaseTemplate extends BaseObject implements Persistent
         }
 
         if ($includeForeignObjects) {
+            if (null !== $this->collScreens) {
+                $result['Screens'] = $this->collScreens->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
             if (null !== $this->collTemplateWidgets) {
                 $result['TemplateWidgets'] = $this->collTemplateWidgets->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
             }
@@ -829,6 +871,12 @@ abstract class BaseTemplate extends BaseObject implements Persistent
             // store object hash to prevent cycle
             $this->startCopy = true;
 
+            foreach ($this->getScreens() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addScreen($relObj->copy($deepCopy));
+                }
+            }
+
             foreach ($this->getTemplateWidgets() as $relObj) {
                 if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
                     $copyObj->addTemplateWidget($relObj->copy($deepCopy));
@@ -896,9 +944,237 @@ abstract class BaseTemplate extends BaseObject implements Persistent
      */
     public function initRelation($relationName)
     {
+        if ('Screen' == $relationName) {
+            $this->initScreens();
+        }
         if ('TemplateWidget' == $relationName) {
             $this->initTemplateWidgets();
         }
+    }
+
+    /**
+     * Clears out the collScreens collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Template The current object (for fluent API support)
+     * @see        addScreens()
+     */
+    public function clearScreens()
+    {
+        $this->collScreens = null; // important to set this to null since that means it is uninitialized
+        $this->collScreensPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collScreens collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialScreens($v = true)
+    {
+        $this->collScreensPartial = $v;
+    }
+
+    /**
+     * Initializes the collScreens collection.
+     *
+     * By default this just sets the collScreens collection to an empty array (like clearcollScreens());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initScreens($overrideExisting = true)
+    {
+        if (null !== $this->collScreens && !$overrideExisting) {
+            return;
+        }
+        $this->collScreens = new PropelObjectCollection();
+        $this->collScreens->setModel('Screen');
+    }
+
+    /**
+     * Gets an array of Screen objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Template is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|Screen[] List of Screen objects
+     * @throws PropelException
+     */
+    public function getScreens($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collScreensPartial && !$this->isNew();
+        if (null === $this->collScreens || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collScreens) {
+                // return empty collection
+                $this->initScreens();
+            } else {
+                $collScreens = ScreenQuery::create(null, $criteria)
+                    ->filterByTemplate($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collScreensPartial && count($collScreens)) {
+                      $this->initScreens(false);
+
+                      foreach ($collScreens as $obj) {
+                        if (false == $this->collScreens->contains($obj)) {
+                          $this->collScreens->append($obj);
+                        }
+                      }
+
+                      $this->collScreensPartial = true;
+                    }
+
+                    $collScreens->getInternalIterator()->rewind();
+
+                    return $collScreens;
+                }
+
+                if ($partial && $this->collScreens) {
+                    foreach ($this->collScreens as $obj) {
+                        if ($obj->isNew()) {
+                            $collScreens[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collScreens = $collScreens;
+                $this->collScreensPartial = false;
+            }
+        }
+
+        return $this->collScreens;
+    }
+
+    /**
+     * Sets a collection of Screen objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $screens A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Template The current object (for fluent API support)
+     */
+    public function setScreens(PropelCollection $screens, PropelPDO $con = null)
+    {
+        $screensToDelete = $this->getScreens(new Criteria(), $con)->diff($screens);
+
+
+        $this->screensScheduledForDeletion = $screensToDelete;
+
+        foreach ($screensToDelete as $screenRemoved) {
+            $screenRemoved->setTemplate(null);
+        }
+
+        $this->collScreens = null;
+        foreach ($screens as $screen) {
+            $this->addScreen($screen);
+        }
+
+        $this->collScreens = $screens;
+        $this->collScreensPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Screen objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related Screen objects.
+     * @throws PropelException
+     */
+    public function countScreens(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collScreensPartial && !$this->isNew();
+        if (null === $this->collScreens || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collScreens) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getScreens());
+            }
+            $query = ScreenQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByTemplate($this)
+                ->count($con);
+        }
+
+        return count($this->collScreens);
+    }
+
+    /**
+     * Method called to associate a Screen object to this object
+     * through the Screen foreign key attribute.
+     *
+     * @param    Screen $l Screen
+     * @return Template The current object (for fluent API support)
+     */
+    public function addScreen(Screen $l)
+    {
+        if ($this->collScreens === null) {
+            $this->initScreens();
+            $this->collScreensPartial = true;
+        }
+
+        if (!in_array($l, $this->collScreens->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddScreen($l);
+
+            if ($this->screensScheduledForDeletion and $this->screensScheduledForDeletion->contains($l)) {
+                $this->screensScheduledForDeletion->remove($this->screensScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	Screen $screen The screen object to add.
+     */
+    protected function doAddScreen($screen)
+    {
+        $this->collScreens[]= $screen;
+        $screen->setTemplate($this);
+    }
+
+    /**
+     * @param	Screen $screen The screen object to remove.
+     * @return Template The current object (for fluent API support)
+     */
+    public function removeScreen($screen)
+    {
+        if ($this->getScreens()->contains($screen)) {
+            $this->collScreens->remove($this->collScreens->search($screen));
+            if (null === $this->screensScheduledForDeletion) {
+                $this->screensScheduledForDeletion = clone $this->collScreens;
+                $this->screensScheduledForDeletion->clear();
+            }
+            $this->screensScheduledForDeletion[]= clone $screen;
+            $screen->setTemplate(null);
+        }
+
+        return $this;
     }
 
     /**
@@ -1181,6 +1457,11 @@ abstract class BaseTemplate extends BaseObject implements Persistent
     {
         if ($deep && !$this->alreadyInClearAllReferencesDeep) {
             $this->alreadyInClearAllReferencesDeep = true;
+            if ($this->collScreens) {
+                foreach ($this->collScreens as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
             if ($this->collTemplateWidgets) {
                 foreach ($this->collTemplateWidgets as $o) {
                     $o->clearAllReferences($deep);
@@ -1190,6 +1471,10 @@ abstract class BaseTemplate extends BaseObject implements Persistent
             $this->alreadyInClearAllReferencesDeep = false;
         } // if ($deep)
 
+        if ($this->collScreens instanceof PropelCollection) {
+            $this->collScreens->clearIterator();
+        }
+        $this->collScreens = null;
         if ($this->collTemplateWidgets instanceof PropelCollection) {
             $this->collTemplateWidgets->clearIterator();
         }
