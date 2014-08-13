@@ -59,12 +59,12 @@ class Templates extends MY_Controller {
 
         $widgets = WidgetQuery::create()->find();
 
-		$file = "2-column";
+		$file = $template->getLayout();
 		$layoutDescription = null;
 		
 		ob_start();
 		$screen = new Screen();
-		include($this->templateBase . DIRECTORY_SEPARATOR . $file . '.php');
+		include($this->templateBase . DIRECTORY_SEPARATOR . $file);
 		ob_end_clean();
 
 		if (!is_null($layoutDescription) && is_array($layoutDescription)) {
