@@ -21,7 +21,10 @@ class SlideshowWidget extends AbstractWidget {
         foreach ($slideshows as $slideshow) {
             $form .= '<option value="' . $slideshow->getId() . '"' . (isset($settings['slideshow'])? ($settings['slideshow'] == $slideshow->getId() ? 'selected="selected"' : '') : '') . '>' . $slideshow->getName() . '</option>';
         }
-        $form .= '</select></fieldset></form>';
+        $form .= '</select>
+        <label>Background Colour</label>
+        <input type="text" name="background" value="'. (isset($settings['background']) ? $settings['background'] : '') .'">
+        </fieldset></form>';
         return $form;
     }
 
@@ -30,8 +33,9 @@ class SlideshowWidget extends AbstractWidget {
     {
         $view = '<div class="slideshow">';
         $slideshow = SlideshowQuery::create()->findOneById($settings['slideshow']);
+        $background = (isset($settings['background']) ? $settings['background'] : '#2b0014');
         foreach ($slideshow->getImages() as $img) {
-            $view .= '<img src="' . $img->getSizeUrl($slideshow->getWidth(),$slideshow->getHeight(), '#2b0014') . '">';
+            $view .= '<img src="' . $img->getSizeUrl($slideshow->getWidth(),$slideshow->getHeight(), $background) . '">';
         }
         $view .= '</div>';
 
