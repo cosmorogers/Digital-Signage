@@ -90,14 +90,30 @@ class Templates extends MY_Controller {
         if (!is_null($template) && $data = $this->input->post('widget')) {
             $widget = WidgetQuery::create()->findOneByName($data['name']);
             if (!is_null($widget)) {
-                $templateWidget = new TemplateWidget();
-                $templateWidget->setTemplate($template)
-                    ->setWidget($widget)
-                    ->setContainer($data['container'])
-                    ->setData(serialize($data['settings']))
+                $templateWidget = null;
+
+                if(isset($data['id']) && ctype_digit($data['id'])) {
+                    $templateWidget = TemplateWidgetQuery::create()
+                        ->findOneById($data['id']);
+                }
+
+                if (is_null($templateWidget)) {
+                    $templateWidget = new TemplateWidget();
+                    $templateWidget->setTemplate($template)
+                        ->setWidget($widget)
+                        ->setContainer($data['container']);
+                }
+
+                $settings = array();
+                if (isset($data['settings'])) {
+                    $settings = $data['settings'];
+                }
+
+                $templateWidget
+                    ->setData(serialize($settings))
                     ->save();
 
-                echo json_encode(array('success' => true));
+                echo json_encode(array('success' => true, 'id' => $templateWidget->getId()));
             } else {
                 echo 'widget not found';
             }
@@ -108,7 +124,7 @@ class Templates extends MY_Controller {
 
     public function updateWidget($widgetId)
     {
-        $templateWidget = TemplateWidgetQuery::CREATE()->findOneById($widgetId);
+        $templateWidget = TemplateWidgetQuery::create()->findOneById($widgetId);
         if (!is_null($templateWidget)) {
             $templateWidget->getWidget()->getClass()->update($this->input->get('settings'));
         }
@@ -118,7 +134,7 @@ class Templates extends MY_Controller {
     public function removeWidget()
     {
         if ($widgetId = $this->input->post('id')) {
-            $templateWidget = TemplateWidgetQuery::CREATE()->findOneById($widgetId);
+            $templateWidget = TemplateWidgetQuery::create()->findOneById($widgetId);
             if (!is_null($templateWidget)) {
                 $templateWidget->delete();
             }

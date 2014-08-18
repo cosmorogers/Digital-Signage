@@ -5,7 +5,7 @@ $(function () {
             if (content.length === 1) {
                 content.removeClass('widget-desc');
                 $(ui.item).children('h4').append('<i class="icon-chevron-up pull-right panel-collapse"></i>');
-                content.html(forms[content.data('widget')]);
+                content.html('<form autocomplete="off"><fieldset>' + forms[content.data('widget')] + '</fieldset></form>');
                 content.find('fieldset').append('<div><button class="btn btn-primary" type="submit">Save</button><button class="btn btn-danger pull-right" type="submit"><i class="icon-trash icon-white"></i></button></div>');
                 content.addClass('widget-unsaved');
             }
@@ -43,6 +43,7 @@ $(function () {
         e.preventDefault();
         data = {
             'widget': {
+                'id' : $(this).data('id'),
                 'name': $(this).parents('.popover-content').data('widget'),
                 'container': $(this).parents('.layout-container').data('template-container'),
                 'settings': $(this).serializeObject()
@@ -52,8 +53,14 @@ $(function () {
         var that = $(this);
         $.post(widgetUrl + '/saveWidget/' + templateId, data, function (data) {
             console.log(data);
-            that.parents('.popover-content').removeClass('widget-unsaved');
-        })
+            if (data.success) {
+                that.parents('.popover-content').removeClass('widget-unsaved');
+                if (!that.data('id')) {
+                    that.data('id', data.id);
+                }
+            }
+
+        }, 'json')
     });
 
     $('body').on('click', '.remove-widget', function(e) {

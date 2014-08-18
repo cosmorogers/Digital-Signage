@@ -22,7 +22,7 @@ abstract class AbstractWidget
 
     public function form($settings)
     {
-        return '<form><fieldset></fieldset></form>';
+        return '';
     }
 
     abstract public function view($settings, Screen $screen);

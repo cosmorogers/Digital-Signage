@@ -17,14 +17,13 @@ class SlideshowWidget extends AbstractWidget {
     public function form($settings)
     {
         $slideshows = SlideshowQuery::create()->find();
-        $form = '<form><fieldset><label>Slideshow to show</label><select name="slideshow" autocomplete="off">';
+        $form = '<label>Slideshow to show</label><select name="slideshow" autocomplete="off">';
         foreach ($slideshows as $slideshow) {
             $form .= '<option value="' . $slideshow->getId() . '"' . (isset($settings['slideshow'])? ($settings['slideshow'] == $slideshow->getId() ? 'selected="selected"' : '') : '') . '>' . $slideshow->getName() . '</option>';
         }
         $form .= '</select>
         <label>Background Colour</label>
-        <input type="text" name="background" value="'. (isset($settings['background']) ? $settings['background'] : '') .'">
-        </fieldset></form>';
+        <input type="text" name="background" value="'. (isset($settings['background']) ? $settings['background'] : '') .'">';
         return $form;
     }
 
