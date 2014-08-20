@@ -78,7 +78,27 @@ $(function () {
 
     $('body').on('change', '.layout-container form', function(e) {
         $(this).parent('.popover-content').addClass('widget-unsaved');
-    })
+    });
+
+    $('#changeNameBtn').on('click', function(e) {
+        e.preventDefault();
+        $('#templateName').addClass('hide');
+        $('#changeTemplateName').removeClass('hide');
+    });
+
+    $('#changeNameSaveBtn').on('click', function(e) {
+        e.preventDefault();
+        var name = $('#templateNameInput').val();
+        var data = {'name' : name};
+        data[token.name] = token.value;
+
+        $.post(widgetUrl + '/changeName/' + templateId, data, function(resp) {
+            $('#templateName > span').text(name);
+            $('#changeTemplateName').addClass('hide');
+            $('#templateName').removeClass('hide');
+        })
+
+    });
 
 
 });

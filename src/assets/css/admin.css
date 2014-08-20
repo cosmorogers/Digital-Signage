@@ -380,3 +380,11 @@ body {
 .widget-unsaved {
     background-color: #ffc;
 }
+
+#templateName button {
+    display: none;
+}
+
+#templateName:hover button {
+    display: inline-block;
+}

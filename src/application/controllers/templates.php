@@ -141,5 +141,18 @@ class Templates extends MY_Controller {
         }
     }
 
+    public function changeName($templateId)
+    {
+        $template = TemplateQuery::create()->findOneById($templateId);
+
+        if (!is_null($template)) {
+            $template->setName($this->input->post('name'));
+
+            if ($template->validate()) {
+                $template->save();
+            }
+        }
+    }
+
 
 }

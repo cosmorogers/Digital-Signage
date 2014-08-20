@@ -15,7 +15,13 @@ $this->view('templates/header', $header);
 
 $forms = array();
 ?>
-<h3><?php echo $template->getName(); ?></h3>
+<h3 id="templateName"><span><?php echo $template->getName(); ?></span> <button type="button" id="changeNameBtn"><i class="icon-pencil"></i></button></h3>
+<div id="changeTemplateName" class="hide">
+    <div class="input-append">
+        <input id="templateNameInput" type="text" name="templateName" value="<?php echo $template->getName(); ?>"/>
+        <button class="btn" type="button" id="changeNameSaveBtn">Save</button>
+    </div>
+</div>
 <div class="row-fluid">
 	<div class=" span3">
 		<h4 >Available Widgets</h4>
