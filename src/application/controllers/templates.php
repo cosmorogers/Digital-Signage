@@ -84,6 +84,22 @@ class Templates extends MY_Controller {
 		}
 	}
 
+    public function delete($id)
+    {
+        $template = TemplateQuery::create()->findOneById($id);
+        if (!is_null($template)) {
+            if ($this->input->post('confirm') !== FALSE && $this->input->post('confirm') == $id) {
+                $template->delete();
+                $this->addSuccessMessage('Template deleted');
+                redirect('templates');
+            } else {
+                $this->load->view('screens/templates/delete', array('template'=>$template));
+            }
+        } else {
+            show_404();
+        }
+    }
+
     public function saveWidget($templateId)
     {
         $template = TemplateQuery::create()->findOneById($templateId);
