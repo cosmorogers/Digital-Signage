@@ -25,7 +25,7 @@ class Temperatures extends MY_Controller {
                 }
             }
         } else {
-            echo "no";
+            //Not run on command line
         }
 
     }
