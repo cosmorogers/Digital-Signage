@@ -23,7 +23,6 @@ class User extends BaseUser
 	}
 	
 	public function preSave(PropelPDO $con = null) {
-		var_dump($this->modifiedColumns);
 		if (in_array(UserPeer::PASSWORD, $this->modifiedColumns)) {
 			if (!is_null($this->getPassword())) {
 				
