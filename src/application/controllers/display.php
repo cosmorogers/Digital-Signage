@@ -10,7 +10,10 @@ class Display extends MY_Controller {
 		if (!is_null($mac)) {
 			$screen = ScreenQuery::create()->findOneByMac($mac);
 		} else {
-			$screen = ScreenQuery::create()->findOneByIp($this->input->ip_address());
+      $ip = $_SERVER['REMOTE_ADDR'];
+      if ($this->input->valid_ip($ip)) {
+			  $screen = ScreenQuery::create()->findOneByIp($ip);
+      }
 		}
 
 		if (is_null($screen)) {
@@ -38,4 +41,22 @@ class Display extends MY_Controller {
 
 		}
 	}
+
+
+  public function proxy() {
+    $url = $_GET['url'];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL,$url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+/*
+curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (compatible;)");
+ curl_setopt($ch, CURLOPT_HEADER, false);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt ($ch, CURLOPT_FAILONERROR, true);*/
+    $output = curl_exec($ch);
+    echo $output;
+    curl_close($ch); 
+  }
 }

@@ -33,12 +33,12 @@ $t = $screen->getTemplate();
 </head>
 
 <body>
-
+<script src="<?php echo base_url('assets/js/jquery-1.9.1.js');?>"></script>
+<script src="<?php echo base_url('assets/js/refresh-screen.js');?>"></script>
   <?php echo (!is_null($t) ? $t->getWidgetsInContainer('main', $screen) : ''); ?>
 
 
-<script src="<?php echo base_url('assets/js/jquery-1.9.1.js');?>"></script>
-<script src="<?php echo base_url('assets/js/refresh-screen.js');?>"></script>
+
 <?php if(!is_null($t)):?>
     <?php foreach ($t->getScripts() as $script) : ?>
         <script src="<?php echo base_url('assets/js/' . $script); ?>"></script>
