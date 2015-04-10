@@ -41,7 +41,7 @@ $this->helper('form');
 
 	<div class="form-actions">
 		<button type="submit" class="btn btn-primary">Create</button>
-		<a href="<?php echo site_url('screens/templates')?>" class="btn">Cancel</a>
+		<a href="<?php echo site_url('templates')?>" class="btn">Cancel</a>
 	</div>
 </form>
 
